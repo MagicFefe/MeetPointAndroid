@@ -54,7 +54,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
 import com.swaptech.meet.domain.user.model.UserRegister
@@ -70,10 +69,8 @@ import java.util.*
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SignUpScreen(
-    authViewModel: AuthUserViewModel,
-    viewModel: SignUpViewModel,
-    navHostController: NavHostController,
-    navController: NavController
+    viewModel: AuthUserViewModel,
+    navController: NavHostController
 ) {
     var imageBitmap: Bitmap? by rememberSaveable {
         mutableStateOf(null)
@@ -129,10 +126,7 @@ fun SignUpScreen(
                 .align(Alignment.TopStart)
                 .padding(10.dp),
             onClick = {
-                navController.navigate(Root.Auth.Navigation.SignIn.route) {
-                    launchSingleTop = true
-                    popUpTo(Root.Auth.Navigation.SignIn.route)
-                }
+                navController.popBackStack()
             }
         ) {
             Icon(
@@ -323,10 +317,10 @@ fun SignUpScreen(
                                         )
                                     )
                                 )
-                                authViewModel.signUpUser(
+                                viewModel.signUpUser(
                                     userRegister = userRegister,
                                     onSuccess = {
-                                        navHostController.replaceTo(Root.Home.route)
+                                        navController.replaceTo(Root.Home.route)
                                     },
                                     onHttpError = { error ->
                                         when (error.code()) {

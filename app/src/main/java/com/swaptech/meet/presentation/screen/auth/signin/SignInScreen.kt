@@ -32,10 +32,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
 import com.swaptech.meet.domain.user.model.UserMinimal
+import com.swaptech.meet.presentation.navigation.Auth
 import com.swaptech.meet.presentation.navigation.Root
 import com.swaptech.meet.presentation.screen.auth.AuthUserViewModel
 import com.swaptech.meet.presentation.utils.replaceTo
@@ -43,8 +43,7 @@ import com.swaptech.meet.presentation.utils.replaceTo
 @Composable
 fun SignInScreen(
     viewModel: AuthUserViewModel,
-    navHostController: NavHostController,
-    navController: NavController
+    navController: NavHostController
 ) {
     var email by rememberSaveable {
         mutableStateOf("")
@@ -125,7 +124,7 @@ fun SignInScreen(
                         viewModel.signInUser(
                             user = user,
                             onSuccess = {
-                                navHostController.replaceTo(Root.Home.route)
+                                navController.replaceTo(Root.Home.route)
                             },
                             onHttpError = { error ->
                                 when (error.code()) {
@@ -173,7 +172,7 @@ fun SignInScreen(
                     )
                 ),
                 onClick = {
-                    navController.navigate(Root.Auth.Navigation.SignUp.route) {
+                    navController.navigate(Auth.SignUp.route) {
                         launchSingleTop = true
                     }
                 }

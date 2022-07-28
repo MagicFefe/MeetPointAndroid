@@ -1,7 +1,6 @@
 package com.swaptech.meet.data.user
 
 import android.content.SharedPreferences
-import android.util.Log
 import com.swaptech.meet.domain.user.model.UserMinimal
 import com.swaptech.meet.domain.user.model.UserRegister
 import com.swaptech.meet.domain.user.model.UserResponse
@@ -47,7 +46,6 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun updateUser(user: UserUpdate): UserResponseWithToken =
         userApi.updateUser(user)
-
 
     override suspend fun deleteUser(userId: String) {
         userApi.deleteUserById(userId)

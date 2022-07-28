@@ -3,6 +3,9 @@ package com.swaptech.meet.presentation.utils
 import android.graphics.Color
 import android.util.Base64
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
@@ -431,5 +435,26 @@ fun UserHeader(
             text = profileSurname,
             fontSize = 16.sp
         )
+    }
+}
+
+@Composable
+fun VerticalScrollableContent(
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState,
+    content: @Composable BoxScope.() -> Unit,
+    stickyBottomContent: @Composable () -> Unit = {}
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .verticalScroll(scrollState),
+            content = content
+        )
+        stickyBottomContent()
     }
 }

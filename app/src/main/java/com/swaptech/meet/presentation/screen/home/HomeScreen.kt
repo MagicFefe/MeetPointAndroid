@@ -7,9 +7,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -20,85 +21,108 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.swaptech.meet.di.presentation.viewmodel.ViewModelFactory
-import com.swaptech.meet.domain.user.model.UserResponse
+import com.swaptech.meet.presentation.navigation.Home
 import com.swaptech.meet.presentation.navigation.Root
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreen
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreenViewModel
-import com.swaptech.meet.presentation.screen.home.user.UserScreen
-import com.swaptech.meet.presentation.screen.home.user.UserScreenViewModel
+import com.swaptech.meet.presentation.screen.home.more.MoreScreen
+import com.swaptech.meet.presentation.screen.home.user_screen.UserScreen
+import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
+import com.swaptech.meet.presentation.viewmodel.RemoteUserViewModel
 
 @Composable
 fun HomeScreen(
-    localUser: UserResponse,
+    localUserViewModel: LocalUserViewModel,
     viewModelFactory: ViewModelFactory,
-    navHostController: NavHostController
+    rootNavController: NavHostController
 ) {
-    val navController = rememberNavController()
+    //Getting user from db again for calling recomposition
+    val savedUser by localUserViewModel.localUser.collectAsState(null)
+    val bottomBarNavController = rememberNavController()
     val homeScreens = listOf(
-        Root.Home.Navigation.MeetPoints,
-        Root.Home.Navigation.User
+        Home.MeetPoints,
+        Home.More
     )
-    Scaffold(
-        bottomBar = {
-            BottomNavigation {
-                val backStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = backStackEntry?.destination
-                homeScreens.forEach { screen ->
-                    BottomNavigationItem(
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = screen.icon),
-                                contentDescription = null
-                            )
-                        },
-                        label = {
-                            Text(text = screen.route)
-                        },
-                        selected = currentDestination?.route?.contains(screen.route) ?: false,
-                        onClick = {
-                            val navRoute =
-                                if (screen.route.contains(Root.Home.Navigation.User.route)) {
-                                    "${screen.route}/${localUser.id}"
-                                } else {
-                                    screen.route
+    savedUser?.let { localUser ->
+        Scaffold(
+            bottomBar = {
+                BottomNavigation {
+                    val backStackEntry by bottomBarNavController.currentBackStackEntryAsState()
+                    val currentDestination = backStackEntry?.destination
+                    homeScreens.forEach { screen ->
+                        BottomNavigationItem(
+                            icon = {
+                                Icon(
+                                    imageVector = screen.icon,
+                                    contentDescription = null
+                                )
+                            },
+                            label = {
+                                Text(text = stringResource(screen.name))
+                            },
+                            selected = currentDestination?.route?.contains(screen.route) ?: false,
+                            onClick = {
+                                val navRoute =
+                                    if (screen.route.contains(Home.More.route)) {
+                                        screen.route
+                                    } else {
+                                        screen.route
+                                    }
+                                bottomBarNavController.navigate(navRoute) {
+                                    popUpTo(bottomBarNavController.graph.findStartDestination().id)
+                                    launchSingleTop = true
                                 }
-                            navController.navigate(navRoute) {
-                                popUpTo(navController.graph.findStartDestination().id)
-                                launchSingleTop = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
-        }
-    ) { innerPadding ->
-        NavHost(
-            modifier = Modifier.padding(innerPadding),
-            navController = navController,
-            startDestination = Root.Home.Navigation.MeetPoints.route
-        ) {
-            composable(Root.Home.Navigation.MeetPoints.route) {
-                MeetPointScreen(
-                    localUser = localUser,
-                    viewModel = viewModel(
-                        modelClass = MeetPointScreenViewModel::class.java,
-                        factory = viewModelFactory
+        ) { innerPadding ->
+            NavHost(
+                modifier = Modifier.padding(innerPadding),
+                route = Root.Home.route,
+                navController = bottomBarNavController,
+                startDestination = Home.MeetPoints.route
+            ) {
+                composable(Home.MeetPoints.route) {
+                    MeetPointScreen(
+                        localUser = localUser,
+                        viewModel = viewModel(
+                            modelClass = MeetPointScreenViewModel::class.java,
+                            factory = viewModelFactory
+                        )
                     )
-                )
-            }
-            composable(
-                route = "${Root.Home.Navigation.User.route}/{userId}",
-                arguments = listOf(navArgument("userId") { type = NavType.StringType })
-            ) { backStackEntry ->
-                UserScreen(
-                    userId = backStackEntry.arguments?.getString("userId") ?: "",
-                    localUserId = localUser.id,
-                    viewModel = viewModel(
-                        modelClass = UserScreenViewModel::class.java,
-                        factory = viewModelFactory
-                    ),
-                    navHostController = navHostController
-                )
+                }
+                composable(Home.More.route) {
+                    MoreScreen(
+                        localUserId = localUser.id,
+                        remoteUserViewModel = viewModel(
+                            modelClass = RemoteUserViewModel::class.java,
+                            factory = viewModelFactory
+                        ),
+                        nestedNavController = bottomBarNavController
+                    )
+                }
+
+                composable(
+                    route = Root.UserScreen.route,
+                    arguments = listOf(
+                        navArgument("userId") { type = NavType.StringType }
+                    )
+                ) {
+                    val userId = bottomBarNavController
+                        .currentBackStackEntry?.arguments?.getString("userId")
+                    val localUserId = localUser.id
+                    userId?.let {
+                        UserScreen(
+                            clickedUserId = userId,
+                            localUserId = localUserId,
+                            rootNavController = rootNavController,
+                            bottomBarNavController = bottomBarNavController,
+                            viewModelFactory = viewModelFactory
+                        )
+                    }
+                }
             }
         }
     }

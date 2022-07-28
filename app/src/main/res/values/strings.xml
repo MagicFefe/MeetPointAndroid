@@ -27,7 +27,7 @@
     <string name="meet_point_description">Meet point description</string>
     <string name="max_name_surname_length_limit_exceeded">Max length name and surname is %1$s</string>
     <string name="logout">Logout</string>
-    <string name="edit_user">Edit user</string>
+    <string name="update_user">Update user</string>
     <string name="delete_user">Delete user</string>
     <string name="done">Done</string>
     <string name="old_password">Old password</string>
@@ -37,4 +37,6 @@
     <string name="new_and_old_password_the_same_message">New and old password must be different</string>
     <string name="only_field_name_can_be_empty">Only \"%1$s\" field can be empty</string>
     <string name="select_country">Select country</string>
+    <string name="meet_points">MeetPoints</string>
+    <string name="more">More</string>
 </resources>

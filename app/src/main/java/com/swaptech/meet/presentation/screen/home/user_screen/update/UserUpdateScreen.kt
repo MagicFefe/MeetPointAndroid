@@ -1,16 +1,14 @@
-package com.swaptech.meet.presentation.screen.home.user.update
+package com.swaptech.meet.presentation.screen.home.user_screen.update
 
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Base64
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -31,11 +28,9 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,13 +45,16 @@ import com.swaptech.meet.R
 import com.swaptech.meet.domain.user.model.UserUpdate
 import com.swaptech.meet.presentation.MAX_NAME_SURNAME_LENGTH
 import com.swaptech.meet.presentation.MIN_PASSWORD_LENGTH
-import com.swaptech.meet.presentation.navigation.Root
-import com.swaptech.meet.presentation.screen.home.user.UserScreenViewModel
+import com.swaptech.meet.presentation.navigation.User
+import com.swaptech.meet.presentation.utils.FetchWithParam
 import com.swaptech.meet.presentation.utils.UserImage
+import com.swaptech.meet.presentation.utils.VerticalScrollableContent
 import com.swaptech.meet.presentation.utils.replaceTo
 import com.swaptech.meet.presentation.utils.resizeToProfileImage
 import com.swaptech.meet.presentation.utils.toBase64
 import com.swaptech.meet.presentation.utils.toByteArray
+import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
+import com.swaptech.meet.presentation.viewmodel.RemoteUserViewModel
 import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -64,79 +62,67 @@ import java.util.*
 fun UserUpdateScreen(
     userId: String,
     localUserId: String,
-    viewModel: UserScreenViewModel,
-    nestedNavController: NavHostController,
-    navHostController: NavHostController
+    remoteUserViewModel: RemoteUserViewModel,
+    localUserViewModel: LocalUserViewModel,
+    viewModel: UserUpdateScreenViewModel,
+    nestedNavController: NavHostController
 ) {
-    val context = LocalContext.current
-    LaunchedEffect(userId) {
-        viewModel.getUserById(userId)
-    }
-    val userById = viewModel.userById
-    userById?.let {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            val scrollableState = rememberScrollState()
-            var userImage by rememberSaveable {
-                mutableStateOf(
-                    Base64.decode(
-                        userById.image,
-                        Base64.DEFAULT
-                    )
-                )
-            }
-            val countries by remember {
-                mutableStateOf(
-                    Locale.getAvailableLocales()
-                        .map { it.displayCountry }
-                        .filterNot { it.isEmpty() }
-                )
-            }
-            val (name, onNameChange) = rememberSaveable {
-                mutableStateOf(userById.name)
-            }
-            val (city, onCityChange) = rememberSaveable {
-                mutableStateOf(userById.city)
-            }
-            var surname by rememberSaveable {
-                mutableStateOf(userById.surname)
-            }
-            var email by rememberSaveable {
-                mutableStateOf(userById.email)
-            }
-            var country by rememberSaveable {
-                mutableStateOf(userById.country)
-            }
-            var oldPassword by rememberSaveable {
-                mutableStateOf("")
-            }
-            var newPassword by rememberSaveable {
-                mutableStateOf("")
-            }
-            val launcher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.GetContent(),
-                onResult = { uri: Uri? ->
-                    uri?.let {
-                        val unprocessedBitmap =
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                val source = ImageDecoder.createSource(context.contentResolver, uri)
-                                ImageDecoder.decodeBitmap(source)
-                            } else {
-                                @Suppress("DEPRECATION")
-                                MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                            }
-                        userImage = unprocessedBitmap.resizeToProfileImage().toByteArray()
-                    }
-                }
+    FetchWithParam(
+        param = userId,
+        action = { remoteUserViewModel.getUserById(it) }
+    ) { userById ->
+        val context = LocalContext.current
+        val scrollableState = rememberScrollState()
+        var userImage by rememberSaveable {
+            mutableStateOf(userById.image.toByteArray())
+        }
+        val countries by remember {
+            mutableStateOf(
+                Locale.getAvailableLocales()
+                    .map { it.displayCountry }
+                    .filterNot { it.isEmpty() }
             )
-            val scope = rememberCoroutineScope()
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(scrollableState)
-            ) {
+        }
+        val (name, onNameChange) = rememberSaveable {
+            mutableStateOf(userById.name)
+        }
+        val (city, onCityChange) = rememberSaveable {
+            mutableStateOf(userById.city)
+        }
+        var surname by rememberSaveable {
+            mutableStateOf(userById.surname)
+        }
+        var email by rememberSaveable {
+            mutableStateOf(userById.email)
+        }
+        var country by rememberSaveable {
+            mutableStateOf(userById.country)
+        }
+        var oldPassword by rememberSaveable {
+            mutableStateOf("")
+        }
+        var newPassword by rememberSaveable {
+            mutableStateOf("")
+        }
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+            onResult = { uri: Uri? ->
+                uri?.let {
+                    val unprocessedBitmap =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            val source = ImageDecoder.createSource(context.contentResolver, uri)
+                            ImageDecoder.decodeBitmap(source)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                        }
+                    userImage = unprocessedBitmap.resizeToProfileImage().toByteArray()
+                }
+            }
+        )
+        VerticalScrollableContent(
+            scrollState = scrollableState,
+            content = {
                 var countriesMenuExpanded by rememberSaveable {
                     mutableStateOf(false)
                 }
@@ -276,37 +262,29 @@ fun UserUpdateScreen(
                         maxLines = 1
                     )
                 }
-            }
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 5.dp, end = 5.dp),
-                onClick = {
-                    if (name.isEmpty() || surname.isEmpty() || email.isEmpty()
-                        || country.isEmpty() || city.isEmpty() || oldPassword.isEmpty()
-                    ) {
-                        val newPasswordString = context.getString(R.string.new_password)
-                        val message = context.getString(
-                            R.string.only_field_name_can_be_empty,
-                            newPasswordString
-                        )
-                        Toast.makeText(
-                            context,
-                            message,
-                            Toast.LENGTH_LONG
-                        ).show()
-                        return@Button
-                    }
-                    if (oldPassword.length < MIN_PASSWORD_LENGTH) {
-                        Toast.makeText(
-                            context,
-                            R.string.password_too_short_message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@Button
-                    }
-                    if (newPassword.isNotEmpty()) {
-                        if (newPassword.length < MIN_PASSWORD_LENGTH) {
+            },
+            stickyBottomContent = {
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 5.dp, end = 5.dp),
+                    onClick = {
+                        if (name.isEmpty() || surname.isEmpty() || email.isEmpty()
+                            || country.isEmpty() || city.isEmpty() || oldPassword.isEmpty()
+                        ) {
+                            val newPasswordString = context.getString(R.string.new_password)
+                            val message = context.getString(
+                                R.string.only_field_name_can_be_empty,
+                                newPasswordString
+                            )
+                            Toast.makeText(
+                                context,
+                                message,
+                                Toast.LENGTH_LONG
+                            ).show()
+                            return@Button
+                        }
+                        if (oldPassword.length < MIN_PASSWORD_LENGTH) {
                             Toast.makeText(
                                 context,
                                 R.string.password_too_short_message,
@@ -314,64 +292,74 @@ fun UserUpdateScreen(
                             ).show()
                             return@Button
                         }
-                    }
-                    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                        Toast.makeText(
-                            context,
-                            R.string.incorrect_password,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@Button
-                    }
-                    if (name.length > MAX_NAME_SURNAME_LENGTH
-                        || surname.length > MAX_NAME_SURNAME_LENGTH
-                    ) {
-                        val message = context.getString(
-                            R.string.max_name_surname_length_limit_exceeded,
-                            MAX_NAME_SURNAME_LENGTH.toString()
-                        )
-                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-                        return@Button
-                    }
-                    if (oldPassword == newPassword) {
-                        Toast.makeText(
-                            context,
-                            R.string.new_and_old_password_the_same_message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@Button
-                    }
-                    val userUpdate = UserUpdate(
-                        id = userById.id,
-                        name = name,
-                        surname = surname,
-                        newEmail = email,
-                        oldEmail = userById.email,
-                        country = country,
-                        city = city,
-                        oldPassword = oldPassword,
-                        newPassword = newPassword.ifEmpty {
-                            oldPassword
-                        },
-                        image = String(
-                            userImage.toBase64()
-                        )
-                    )
-                    viewModel.updateUser(
-                        user = userUpdate,
-                        onSuccess = { newUser ->
-                            viewModel.deleteLocalUserById(localUserId)
-                            viewModel.saveLocalUser(newUser)
-                            nestedNavController.replaceTo(Root.Home.Navigation.User.Navigation.Detail.route)
-                        },
-                        onHttpError = { error ->
-                            Toast.makeText(context, error.message, Toast.LENGTH_LONG).show()
+                        if (newPassword.isNotEmpty()) {
+                            if (newPassword.length < MIN_PASSWORD_LENGTH) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.password_too_short_message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@Button
+                            }
                         }
-                    )
+                        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            Toast.makeText(
+                                context,
+                                R.string.incorrect_password,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+                        if (name.length > MAX_NAME_SURNAME_LENGTH
+                            || surname.length > MAX_NAME_SURNAME_LENGTH
+                        ) {
+                            val message = context.getString(
+                                R.string.max_name_surname_length_limit_exceeded,
+                                MAX_NAME_SURNAME_LENGTH.toString()
+                            )
+                            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                            return@Button
+                        }
+                        if (oldPassword == newPassword) {
+                            Toast.makeText(
+                                context,
+                                R.string.new_and_old_password_the_same_message,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+                        val userUpdate = UserUpdate(
+                            id = userById.id,
+                            name = name,
+                            surname = surname,
+                            newEmail = email,
+                            oldEmail = userById.email,
+                            country = country,
+                            city = city,
+                            oldPassword = oldPassword,
+                            newPassword = newPassword.ifEmpty {
+                                oldPassword
+                            },
+                            image = String(
+                                userImage.toBase64()
+                            )
+                        )
+                        viewModel.updateUser(
+                            user = userUpdate,
+                            onSuccess = { newUser ->
+                                localUserViewModel.deleteLocalUserById(localUserId)
+                                localUserViewModel.saveLocalUser(newUser)
+                                nestedNavController.replaceTo(User.Details.route)
+                            },
+                            onHttpError = { error ->
+                                Toast.makeText(context, error.message, Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    }
+                ) {
+                    Text(text = stringResource(R.string.done))
                 }
-            ) {
-                Text(text = stringResource(R.string.done))
             }
-        }
+        )
     }
 }
