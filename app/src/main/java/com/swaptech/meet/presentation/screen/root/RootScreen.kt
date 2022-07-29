@@ -13,9 +13,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.swaptech.meet.di.presentation.viewmodel.ViewModelFactory
 import com.swaptech.meet.presentation.SPLASH_SCREEN_WAIT_TIME_MS
-import com.swaptech.meet.presentation.navigation.Auth
-import com.swaptech.meet.presentation.navigation.Home
-import com.swaptech.meet.presentation.navigation.Root
+import com.swaptech.meet.presentation.navigation.destination.Auth
+import com.swaptech.meet.presentation.navigation.destination.Home
+import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.navigation.nav_graph.authNavGraph
 import com.swaptech.meet.presentation.screen.home.HomeScreen
 import com.swaptech.meet.presentation.screen.placeholder.PlaceholderScreen

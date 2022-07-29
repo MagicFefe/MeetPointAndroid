@@ -1,19 +1,32 @@
 package com.swaptech.meet.presentation.utils
 
 import android.graphics.Color
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Base64
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -24,20 +37,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Done
+import androidx.compose.material.icons.outlined.Public
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,6 +74,9 @@ import com.swaptech.meet.domain.meet.MeetPointResponse
 import com.swaptech.meet.domain.meet.MeetPointResponseDetails
 import com.swaptech.meet.presentation.MAPNIK_512
 import com.swaptech.meet.presentation.WORLD_LEVEL_ZOOM
+import com.swaptech.meet.presentation.utils.country_chooser.CountryChooser
+import com.swaptech.meet.presentation.utils.country_chooser.CountryChooserState
+import com.swaptech.meet.presentation.utils.country_chooser.rememberCountryChooserState
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
@@ -354,7 +377,10 @@ fun MeetPointDetails(
                     )
                     Text(
                         modifier = Modifier.padding(bottom = 5.dp),
-                        text = stringResource(id = R.string.meet_point_created_at, meetPoint.createdAt)
+                        text = stringResource(
+                            id = R.string.meet_point_created_at,
+                            meetPoint.createdAt
+                        )
                     )
                 }
             }
@@ -442,8 +468,8 @@ fun UserHeader(
 fun VerticalScrollableContent(
     modifier: Modifier = Modifier,
     scrollState: ScrollState,
-    content: @Composable BoxScope.() -> Unit,
-    stickyBottomContent: @Composable () -> Unit = {}
+    stickyBottomContent: @Composable () -> Unit = {},
+    content: @Composable BoxScope.() -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -456,5 +482,184 @@ fun VerticalScrollableContent(
             content = content
         )
         stickyBottomContent()
+    }
+}
+
+@Composable
+fun OutlinedClickableTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onClick: () -> Unit
+) {
+    val focusRequester = remember { FocusRequester() }
+    val interactionSource = rememberMutableInteractionSource()
+    val clicked by interactionSource.collectIsPressedAsState()
+    OutlinedTextField(
+        modifier = modifier.focusRequester(focusRequester),
+        readOnly = true,
+        value = value,
+        onValueChange = {
+        },
+        placeholder = {
+            Text(text = stringResource(id = R.string.select_country))
+        },
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Outlined.Public,
+                contentDescription = null
+            )
+        },
+        interactionSource = interactionSource.also {
+            if (clicked) {
+                onClick()
+                focusRequester.requestFocus()
+            }
+        }
+    )
+}
+
+@Composable
+fun UpdateSignUpUserForm(
+    modifier: Modifier = Modifier,
+    name: String,
+    onNameChange: (String) -> Unit,
+    surname: String,
+    onSurnameChange: (String) -> Unit,
+    email: String,
+    onEmailChange: (String) -> Unit,
+    country: String,
+    onCountryClick: (String) -> Unit,
+    city: String,
+    onCityChange: (String) -> Unit,
+    image: ByteArray? = null,
+    onImageChooseResult: (ByteArray?) -> Unit,
+    onCloseButtonClick: () -> Unit,
+    finishButton: @Composable () -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val countryChooserState = rememberCountryChooserState(CountryChooserState.Value.Hidden)
+    val scrollState = rememberScrollState()
+    var userImage by rememberSaveable {
+        mutableStateOf(image)
+    }
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            uri?.let {
+                val unprocessedBitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    ImageDecoder.decodeBitmap(source)
+                } else {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                }
+                userImage = unprocessedBitmap.resizeToProfileImage().toByteArray()
+                onImageChooseResult(userImage)
+            }
+        }
+    )
+    if (countryChooserState.isHidden) {
+        VerticalScrollableContent(
+            modifier = modifier,
+            scrollState = scrollState,
+            stickyBottomContent = finishButton
+        ) {
+            IconButton(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(10.dp),
+                onClick = onCloseButtonClick
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Close,
+                    contentDescription = null
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                UserImage(
+                    modifier = Modifier
+                        .clickable {
+                            launcher.launch("image/*")
+                        }
+                        .size(100.dp),
+                    userImage = userImage
+                )
+                OutlinedTextField(
+                    modifier = Modifier.width(280.dp),
+                    value = name,
+                    onValueChange = onNameChange,
+                    label = {
+                        Text(text = stringResource(id = R.string.name))
+                    },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next
+                    )
+                )
+                OutlinedTextField(
+                    modifier = Modifier.width(280.dp),
+                    value = surname,
+                    onValueChange = onSurnameChange,
+                    label = {
+                        Text(text = stringResource(id = R.string.surname))
+                    },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next
+                    )
+                )
+                OutlinedTextField(
+                    modifier = Modifier.width(280.dp),
+                    value = email,
+                    onValueChange = onEmailChange,
+                    label = {
+                        Text(text = stringResource(id = R.string.email))
+                    },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next
+                    )
+                )
+                OutlinedClickableTextField(
+                    value = country,
+                    onClick = {
+                        countryChooserState.show()
+                    }
+                )
+                OutlinedTextField(
+                    modifier = Modifier.width(280.dp),
+                    value = city,
+                    onValueChange = onCityChange,
+                    label = {
+                        Text(text = stringResource(id = R.string.city))
+                    },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next
+                    )
+                )
+                content()
+            }
+        }
+    } else {
+        CountryChooser(
+            onBackButtonClick = {
+                countryChooserState.hide()
+            },
+            onCountryClick = { selected ->
+                onCountryClick(selected)
+                countryChooserState.hide()
+            }
+        )
     }
 }

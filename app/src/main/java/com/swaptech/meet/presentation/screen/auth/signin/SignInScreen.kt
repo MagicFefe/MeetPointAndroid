@@ -1,6 +1,5 @@
 package com.swaptech.meet.presentation.screen.auth.signin
 
-import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
@@ -35,9 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
 import com.swaptech.meet.domain.user.model.UserMinimal
-import com.swaptech.meet.presentation.navigation.Auth
-import com.swaptech.meet.presentation.navigation.Root
+import com.swaptech.meet.presentation.navigation.destination.Auth
+import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.screen.auth.AuthUserViewModel
+import com.swaptech.meet.presentation.utils.Validator
 import com.swaptech.meet.presentation.utils.replaceTo
 
 @Composable
@@ -68,7 +69,10 @@ fun SignInScreen(
                     Text(text = stringResource(id = R.string.email))
                 },
                 singleLine = true,
-                maxLines = 1
+                maxLines = 1,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 modifier = Modifier.width(280.dp),
@@ -93,7 +97,7 @@ fun SignInScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
                     onClick = {
-                        if (email.isEmpty() || password.isEmpty()) {
+                        if (Validator.anyFieldIsEmpty(email, password)) {
                             Toast.makeText(
                                 context,
                                 R.string.all_fields_must_be_filled,
@@ -101,7 +105,7 @@ fun SignInScreen(
                             ).show()
                             return@Button
                         }
-                        if (password.length < 8) {
+                        if (Validator.passwordIsNotValid(password)) {
                             Toast.makeText(
                                 context,
                                 R.string.password_too_short_message,
@@ -109,7 +113,7 @@ fun SignInScreen(
                             ).show()
                             return@Button
                         }
-                        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        if (Validator.emailIsNotValid(email)) {
                             Toast.makeText(
                                 context,
                                 R.string.email_is_invalid,
@@ -127,22 +131,11 @@ fun SignInScreen(
                                 navController.replaceTo(Root.Home.route)
                             },
                             onHttpError = { error ->
-                                when (error.code()) {
-                                    404 -> {
-                                        Toast.makeText(
-                                            context,
-                                            error.message,
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                    422 -> {
-                                        Toast.makeText(
-                                            context,
-                                            error.message,
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
+                                Toast.makeText(
+                                    context,
+                                    error.message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         )
                     }

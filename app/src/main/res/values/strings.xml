@@ -39,4 +39,6 @@
     <string name="select_country">Select country</string>
     <string name="meet_points">MeetPoints</string>
     <string name="more">More</string>
+    <string name="enter_country_name">Enter country name</string>
+    <string name="city_name_is_too_long">City name is too long</string>
 </resources>

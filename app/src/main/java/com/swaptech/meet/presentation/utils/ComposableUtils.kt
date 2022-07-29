@@ -1,5 +1,6 @@
 package com.swaptech.meet.presentation.utils
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,4 +23,9 @@ fun <F, P> FetchWithParam(
     fetched?.let {
         onCompletion(it)
     }
+}
+
+@Composable
+fun rememberMutableInteractionSource(): MutableInteractionSource = remember {
+    MutableInteractionSource()
 }

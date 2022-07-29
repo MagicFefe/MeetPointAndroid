@@ -2,7 +2,6 @@ package com.swaptech.meet.di.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.swaptech.meet.presentation.screen.auth.AuthUserViewModel
-import com.swaptech.meet.presentation.screen.auth.signup.SignUpViewModel
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreenViewModel
 import com.swaptech.meet.presentation.screen.home.user_screen.update.UserUpdateScreenViewModel
 import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
@@ -38,9 +37,4 @@ interface ViewModelModule {
     @IntoMap
     @CreateWithViewModelFactory(UserUpdateScreenViewModel::class)
     fun bindUserUpdateScreenViewModel(viewModel: UserUpdateScreenViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @CreateWithViewModelFactory(SignUpViewModel::class)
-    fun bindSignUpViewModel(viewModel: SignUpViewModel): ViewModel
 }

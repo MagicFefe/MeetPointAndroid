@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
-import com.swaptech.meet.presentation.navigation.Auth
-import com.swaptech.meet.presentation.navigation.User
+import com.swaptech.meet.presentation.navigation.destination.Auth
+import com.swaptech.meet.presentation.navigation.destination.User
 import com.swaptech.meet.presentation.utils.FetchWithParam
 import com.swaptech.meet.presentation.utils.UserHeader
 import com.swaptech.meet.presentation.utils.VerticalScrollableContent

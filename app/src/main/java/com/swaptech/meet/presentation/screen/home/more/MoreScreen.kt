@@ -16,8 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.swaptech.meet.presentation.navigation.Root
-import com.swaptech.meet.presentation.navigation.User
+import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.utils.FetchWithParam
 import com.swaptech.meet.presentation.utils.UserImage
 import com.swaptech.meet.presentation.utils.toByteArray

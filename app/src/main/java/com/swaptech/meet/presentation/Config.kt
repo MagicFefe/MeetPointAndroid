@@ -12,8 +12,11 @@ const val USER_DB_NAME = "user_db"
 const val SPLASH_SCREEN_WAIT_TIME_MS = 250L
 const val WORLD_LEVEL_ZOOM = 4.0
 const val CITY_LEVEL_ZOOM = 14.0
+const val MAX_EMAIL_LENGTH = 320
 const val MAX_NAME_SURNAME_LENGTH = 20
 const val MIN_PASSWORD_LENGTH = 8
+const val MAX_PASSWORD_LENGTH = 40
+const val MAX_CITY_NAME_LENGTH = 200
 
 
 val MAPNIK_512 = XYTileSource(

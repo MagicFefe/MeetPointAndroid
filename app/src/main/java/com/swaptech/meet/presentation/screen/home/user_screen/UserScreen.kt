@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.swaptech.meet.di.presentation.viewmodel.ViewModelFactory
-import com.swaptech.meet.presentation.navigation.User
+import com.swaptech.meet.presentation.navigation.destination.User
 import com.swaptech.meet.presentation.screen.home.user_screen.details.UserDetailsScreen
 import com.swaptech.meet.presentation.screen.home.user_screen.update.UserUpdateScreen
 import com.swaptech.meet.presentation.screen.home.user_screen.update.UserUpdateScreenViewModel

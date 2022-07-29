@@ -21,8 +21,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.swaptech.meet.di.presentation.viewmodel.ViewModelFactory
-import com.swaptech.meet.presentation.navigation.Home
-import com.swaptech.meet.presentation.navigation.Root
+import com.swaptech.meet.presentation.navigation.destination.Home
+import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreen
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreenViewModel
 import com.swaptech.meet.presentation.screen.home.more.MoreScreen

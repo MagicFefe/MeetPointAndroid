@@ -1,4 +1,4 @@
-package com.swaptech.meet.presentation.navigation
+package com.swaptech.meet.presentation.navigation.destination
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons

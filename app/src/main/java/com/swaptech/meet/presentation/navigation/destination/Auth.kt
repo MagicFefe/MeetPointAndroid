@@ -1,4 +1,4 @@
-package com.swaptech.meet.presentation.navigation
+package com.swaptech.meet.presentation.navigation.destination
 
 sealed class Auth(val route: String) {
     object SignUp: Auth("sign_up")

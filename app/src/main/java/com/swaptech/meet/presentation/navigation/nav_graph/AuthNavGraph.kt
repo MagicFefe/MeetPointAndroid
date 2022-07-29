@@ -6,7 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.swaptech.meet.di.presentation.viewmodel.ViewModelFactory
-import com.swaptech.meet.presentation.navigation.Auth
+import com.swaptech.meet.presentation.navigation.destination.Auth
 import com.swaptech.meet.presentation.screen.auth.AuthUserViewModel
 import com.swaptech.meet.presentation.screen.auth.signin.SignInScreen
 import com.swaptech.meet.presentation.screen.auth.signup.SignUpScreen
@@ -34,7 +34,7 @@ fun NavGraphBuilder.authNavGraph(
             route = Auth.SignUp.route
         ) {
             SignUpScreen(
-                viewModel = viewModel(
+                authUserViewModel = viewModel(
                     modelClass = AuthUserViewModel::class.java,
                     factory = viewModelFactory
                 ),
