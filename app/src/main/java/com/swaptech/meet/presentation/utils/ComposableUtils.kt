@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 fun <F, P> FetchWithParam(
     param: P,
     action: suspend (P) -> F,
+    onLoading: @Composable () -> Unit = {},
     onCompletion: @Composable (F) -> Unit
 ) {
     var fetched: F? by remember(param) {
@@ -20,8 +21,13 @@ fun <F, P> FetchWithParam(
     LaunchedEffect(param) {
         fetched = action(param)
     }
-    fetched?.let {
-        onCompletion(it)
+    when(fetched) {
+        null -> {
+            onLoading()
+        }
+        else -> {
+            onCompletion(fetched!!)
+        }
     }
 }
 

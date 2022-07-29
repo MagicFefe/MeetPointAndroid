@@ -5,7 +5,6 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,6 +30,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Done
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -197,7 +199,6 @@ fun MeetPointMap(
             newMeetPoints.forEach { meetPointResponse ->
                 val meet =
                     Marker(it).apply {
-                        //TODO: Add Description
                         setOnMarkerClickListener(onMarkerClickListener)
                         title = meetPointResponse.id
                         icon =
@@ -229,7 +230,8 @@ fun MeetPointMap(
 }
 
 @Composable
-fun MeetPointCreationCard(
+fun MeetPointCreationEditCard(
+    cardTitle: String,
     meetPointName: String,
     onMeetPointNameChange: (String) -> Unit,
     meetPointDescription: String,
@@ -253,7 +255,7 @@ fun MeetPointCreationCard(
                     Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
                 }
                 Text(
-                    text = stringResource(id = R.string.create_meet_point),
+                    text = cardTitle,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -301,7 +303,8 @@ fun MeetPointCreationMin_Preview() {
     val (description, onDescriptionChange) = rememberSaveable {
         mutableStateOf("")
     }
-    MeetPointCreationCard(
+    MeetPointCreationEditCard(
+        "",
         name,
         onNameChange,
         description,
@@ -316,7 +319,8 @@ fun MeetPointDetails(
     modifier: Modifier = Modifier,
     meetPoint: MeetPointResponseDetails,
     onCloseButtonCLick: () -> Unit,
-    actionButton: (@Composable () -> Unit)? = null
+    onAuthorClick: () -> Unit,
+    actionButtons: (@Composable RowScope.() -> Unit)? = null
 ) {
     Surface(
         modifier = modifier
@@ -341,16 +345,49 @@ fun MeetPointDetails(
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                actionButton?.let {
-                    actionButton()
+                actionButtons?.let {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = actionButtons
+                    )
                 }
             }
             Column {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.padding(start = 17.dp, end = 17.dp)
+                ) {
+                    Text(
+                        text = stringResource(
+                            id = R.string.meet_point_name_with_params,
+                            meetPoint.meetName
+                        ),
+                        style = MaterialTheme.typography.subtitle1
+                    )
+                    Text(
+                        text = stringResource(
+                            id = R.string.meet_point_description_with_params,
+                            meetPoint.meetDescription
+                        ),
+                        style = MaterialTheme.typography.subtitle2
+                    )
+                    Text(
+                        modifier = Modifier.padding(bottom = 5.dp),
+                        text = stringResource(
+                            id = R.string.meet_point_created_at,
+                            meetPoint.createdAt
+                        ),
+                        style = MaterialTheme.typography.subtitle2
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .clickable(
+                            onClick = onAuthorClick
+                        )
+                        .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val decodedProfileImage = Base64.decode(meetPoint.authorImage, Base64.DEFAULT)
+                    val decodedProfileImage = meetPoint.authorImage.toByteArray()
                     UserHeader(
                         modifier = Modifier
                             .padding(top = 10.dp)
@@ -358,29 +395,6 @@ fun MeetPointDetails(
                         profileName = meetPoint.authorName,
                         profileSurname = meetPoint.authorSurname,
                         profileImage = decodedProfileImage
-                    )
-                }
-                Column(
-                    modifier = Modifier.padding(start = 17.dp)
-                ) {
-                    Text(
-                        text = stringResource(
-                            id = R.string.meet_point_name_with_params,
-                            meetPoint.meetName
-                        )
-                    )
-                    Text(
-                        text = stringResource(
-                            id = R.string.meet_point_description_with_params,
-                            meetPoint.meetDescription
-                        )
-                    )
-                    Text(
-                        modifier = Modifier.padding(bottom = 5.dp),
-                        text = stringResource(
-                            id = R.string.meet_point_created_at,
-                            meetPoint.createdAt
-                        )
                     )
                 }
             }
@@ -391,12 +405,18 @@ fun MeetPointDetails(
 @Preview
 @Composable
 fun MeetPointDetails_Preview() {
+    var description = ""
+    for (i in 0..8) {
+        description += description.ifEmpty {
+            "a"
+        }
+    }
     MeetPointDetails(
         meetPoint = MeetPointResponseDetails(
             id = "",
             authorId = "",
             meetName = "Talk with new friends",
-            meetDescription = "Some description",
+            meetDescription = description,
             latitude = 2.0,
             longitude = 2.0,
             createdAt = "23.07.2022",
@@ -405,12 +425,15 @@ fun MeetPointDetails_Preview() {
             authorImage = ""
         ),
         onCloseButtonCLick = {},
-        actionButton = {
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Outlined.Delete, contentDescription = null)
-            }
+        onAuthorClick = {}
+    ) {
+        IconButton(onClick = { }) {
+            Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
         }
-    )
+        IconButton(onClick = { }) {
+            Icon(imageVector = Icons.Outlined.Delete, contentDescription = null)
+        }
+    }
 }
 
 @Composable

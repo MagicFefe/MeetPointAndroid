@@ -18,12 +18,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.swaptech.meet.R
 import com.swaptech.meet.domain.meet.CreateMeetPoint
 import com.swaptech.meet.domain.user.model.UserResponse
 import com.swaptech.meet.presentation.CITY_LEVEL_ZOOM
-import com.swaptech.meet.presentation.utils.MeetPointCreationCard
+import com.swaptech.meet.presentation.navigation.destination.Root
+import com.swaptech.meet.presentation.utils.MeetPointCreationEditCard
 import com.swaptech.meet.presentation.utils.MeetPointDetails
 import com.swaptech.meet.presentation.utils.MeetPointMap
 import kotlinx.coroutines.Dispatchers
@@ -33,15 +37,16 @@ import org.osmdroid.views.overlay.Marker
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun MeetPointScreen(
+fun MeetPointsScreen(
     localUser: UserResponse,
-    viewModel: MeetPointScreenViewModel
+    viewModel: MeetPointScreenViewModel,
+    nestedNavController: NavHostController
 ) {
     Box {
         val permissionsState = rememberMultiplePermissionsState(
             permissions = permissions
         )
-        LaunchedEffect(key1 = !permissionsState.allPermissionsGranted) {
+        LaunchedEffect(!permissionsState.allPermissionsGranted) {
             permissionsState.launchMultiplePermissionRequest()
         }
         if (permissionsState.allPermissionsGranted) {
@@ -103,79 +108,96 @@ fun MeetPointScreen(
                 }
             )
             AnimatedVisibility(
-                visible = screenState !is MeetPointScreenState.Idle,
+                visible = screenState is MeetPointScreenState.CreateMeetPoint,
                 modifier = Modifier.align(Alignment.BottomCenter),
                 enter = slideInVertically { fullHeight -> fullHeight },
                 exit = slideOutVertically { fullHeight -> fullHeight }
             ) {
-                when (screenState) {
-                    is MeetPointScreenState.CreateMeetPoint -> {
-                        val (meetPointName, onMeetPointNameChange) = rememberSaveable {
-                            mutableStateOf("")
+                val (meetPointName, onMeetPointNameChange) = rememberSaveable {
+                    mutableStateOf("")
+                }
+                val (meetPointDescription, onMeetPointDescription) = rememberSaveable {
+                    mutableStateOf("")
+                }
+                val state by lazy {
+                    screenState as MeetPointScreenState.CreateMeetPoint
+                }
+                MeetPointCreationEditCard(
+                    cardTitle = stringResource(R.string.create_meet_point),
+                    meetPointName = meetPointName,
+                    onMeetPointNameChange = onMeetPointNameChange,
+                    meetPointDescription = meetPointDescription,
+                    onMeetPointDescriptionChange = onMeetPointDescription,
+                    onCloseButtonCLick = {
+                        state.map.overlays.remove(
+                            viewModel.meetPointMarker
+                        )
+                        viewModel.removeMeetPointMarker()
+                    },
+                    onDoneButtonClick = {
+                        viewModel.meetPointMarker?.let { marker ->
+                            val newMeetPoint = CreateMeetPoint(
+                                meetName = meetPointName,
+                                meetDescription = meetPointDescription,
+                                authorId = localUser.id,
+                                authorName = localUser.name,
+                                authorSurname = localUser.surname,
+                                latitude = marker.position.latitude,
+                                longitude = marker.position.longitude
+                            )
+                            viewModel.createMeetPoint(newMeetPoint)
                         }
-                        val (meetPointDescription, onMeetPointDescription) = rememberSaveable {
-                            mutableStateOf("")
+                        state.map.overlays.remove(viewModel.meetPointMarker)
+                        viewModel.removeMeetPointMarker()
+                    }
+                )
+            }
+            AnimatedVisibility(
+                visible = screenState is MeetPointScreenState.ShowMeetPointDetails,
+                modifier = Modifier.align(Alignment.BottomCenter),
+                enter = slideInVertically { fullHeight -> fullHeight },
+                exit = slideOutVertically { fullHeight -> fullHeight }
+            ) {
+
+                clickedMeetPoint?.let {
+                    val onAuthorClick = {
+                        nestedNavController.navigate(
+                            Root.UserScreen.getNavigationRoute(
+                                clickedMeetPoint.authorId
+                            )
+                        ) {
+                            launchSingleTop = true
                         }
-                        MeetPointCreationCard(
-                            meetPointName = meetPointName,
-                            onMeetPointNameChange = onMeetPointNameChange,
-                            meetPointDescription = meetPointDescription,
-                            onMeetPointDescriptionChange = onMeetPointDescription,
+                    }
+                    if (localUser.id == clickedMeetPoint.authorId) {
+                        MeetPointDetails(
+                            meetPoint = clickedMeetPoint,
                             onCloseButtonCLick = {
-                                screenState.map.overlays.remove(viewModel.meetPointMarker)
-                                viewModel.removeMeetPointMarker()
+                                viewModel.hideMeetPointDetails()
                             },
-                            onDoneButtonClick = {
-                                viewModel.meetPointMarker?.let { marker ->
-                                    val newMeetPoint = CreateMeetPoint(
-                                        meetName = meetPointName,
-                                        meetDescription = meetPointDescription,
-                                        authorId = localUser.id,
-                                        authorName = localUser.name,
-                                        authorSurname = localUser.surname,
-                                        latitude = marker.position.latitude,
-                                        longitude = marker.position.longitude
-                                    )
-                                    viewModel.createMeetPoint(newMeetPoint)
+                            onAuthorClick = onAuthorClick
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    viewModel.deleteMeetPoint(clickedMeetPoint.id)
+                                    viewModel.hideMeetPointDetails()
                                 }
-                                screenState.map.overlays.remove(viewModel.meetPointMarker)
-                                viewModel.removeMeetPointMarker()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Delete,
+                                    contentDescription = null
+                                )
                             }
+                        }
+                    } else {
+                        MeetPointDetails(
+                            meetPoint = clickedMeetPoint,
+                            onCloseButtonCLick = {
+                                viewModel.hideMeetPointDetails()
+                            },
+                            onAuthorClick = onAuthorClick
                         )
                     }
-                    is MeetPointScreenState.ShowMeetPointDetails -> {
-                        clickedMeetPoint?.let {
-                            if (localUser.id == clickedMeetPoint.authorId) {
-                                MeetPointDetails(
-                                    meetPoint = clickedMeetPoint,
-                                    onCloseButtonCLick = {
-                                        viewModel.hideMeetPointDetails()
-                                    },
-                                    actionButton = {
-                                        IconButton(
-                                            onClick = {
-                                                viewModel.deleteMeetPoint(clickedMeetPoint.id)
-                                                viewModel.hideMeetPointDetails()
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.Delete,
-                                                contentDescription = null
-                                            )
-                                        }
-                                    }
-                                )
-                            } else {
-                                MeetPointDetails(
-                                    meetPoint = clickedMeetPoint,
-                                    onCloseButtonCLick = {
-                                        viewModel.hideMeetPointDetails()
-                                    }
-                                )
-                            }
-                        }
-                    }
-                    else -> {}
                 }
             }
         }

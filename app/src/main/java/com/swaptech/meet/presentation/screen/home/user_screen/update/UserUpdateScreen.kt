@@ -103,6 +103,7 @@ fun UserUpdateScreen(
                     city = input
                 }
             },
+            image = userImage,
             onImageChooseResult = { selectedImage ->
                 selectedImage?.let {
                     userImage = selectedImage

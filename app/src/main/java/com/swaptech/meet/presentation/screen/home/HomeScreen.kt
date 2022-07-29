@@ -23,7 +23,7 @@ import androidx.navigation.navArgument
 import com.swaptech.meet.di.presentation.viewmodel.ViewModelFactory
 import com.swaptech.meet.presentation.navigation.destination.Home
 import com.swaptech.meet.presentation.navigation.destination.Root
-import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreen
+import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointsScreen
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreenViewModel
 import com.swaptech.meet.presentation.screen.home.more.MoreScreen
 import com.swaptech.meet.presentation.screen.home.user_screen.UserScreen
@@ -85,12 +85,13 @@ fun HomeScreen(
                 startDestination = Home.MeetPoints.route
             ) {
                 composable(Home.MeetPoints.route) {
-                    MeetPointScreen(
+                    MeetPointsScreen(
                         localUser = localUser,
                         viewModel = viewModel(
                             modelClass = MeetPointScreenViewModel::class.java,
                             factory = viewModelFactory
-                        )
+                        ),
+                        nestedNavController = bottomBarNavController
                     )
                 }
                 composable(Home.More.route) {
