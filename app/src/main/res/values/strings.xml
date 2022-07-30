@@ -45,4 +45,5 @@
     <string name="max_length_of_meet_point_name_exceeded">Max length of MeetPoint\'s name is 15</string>
     <string name="meet_point_name_cannot_be_empty">MeetPoint name cannot be empty</string>
     <string name="meet_point_description_is_too_long">MeetPoint description is too long</string>
+    <string name="meet_point_already_exists">MeetPoint already exists, if you want create new MeetPoint, delete old MeetPoint</string>
 </resources>

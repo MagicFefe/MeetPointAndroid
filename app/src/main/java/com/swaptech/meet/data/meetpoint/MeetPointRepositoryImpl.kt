@@ -1,6 +1,7 @@
 package com.swaptech.meet.data.meetpoint
 
 import com.swaptech.meet.domain.meet.model.CreateMeetPoint
+import com.swaptech.meet.domain.meet.model.DeleteMeetPoint
 import com.swaptech.meet.domain.meet.model.MeetPointResponse
 import com.swaptech.meet.domain.meet.repository.MeetPointRepository
 import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
@@ -33,7 +34,7 @@ class MeetPointRepositoryImpl @Inject constructor(
         meetPointApi.updateMeetPoint(updateMeetPoint)
     }
 
-    override suspend fun deleteMeetPoint(meetPointId: String) {
-        meetPointApi.deleteMeetPoint(meetPointId)
+    override suspend fun deleteMeetPoint(deleteMeetPoint: DeleteMeetPoint) {
+        meetPointApi.deleteMeetPoint(deleteMeetPoint)
     }
 }

@@ -1,6 +1,7 @@
 package com.swaptech.meet.domain.meet.repository
 
 import com.swaptech.meet.domain.meet.model.CreateMeetPoint
+import com.swaptech.meet.domain.meet.model.DeleteMeetPoint
 import com.swaptech.meet.domain.meet.model.MeetPointResponse
 import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
 import com.swaptech.meet.domain.meet.model.UpdateMeetPoint
@@ -12,5 +13,5 @@ interface MeetPointRepository {
     suspend fun getMeetPointById(meetPointId: String): MeetPointResponseDetails
     suspend fun createMeetPoint(createMeetPoint: CreateMeetPoint)
     suspend fun updateMeetPoint(updateMeetPoint: UpdateMeetPoint)
-    suspend fun deleteMeetPoint(meetPointId: String)
+    suspend fun deleteMeetPoint(deleteMeetPoint: DeleteMeetPoint)
 }

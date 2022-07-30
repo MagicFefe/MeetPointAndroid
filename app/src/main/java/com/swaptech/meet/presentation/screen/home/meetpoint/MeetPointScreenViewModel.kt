@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swaptech.meet.domain.meet.model.CreateMeetPoint
 import com.swaptech.meet.domain.meet.interactor.MeetPointInteractor
+import com.swaptech.meet.domain.meet.model.DeleteMeetPoint
 import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
 import com.swaptech.meet.domain.meet.model.UpdateMeetPoint
 import com.swaptech.meet.presentation.WORLD_LEVEL_ZOOM
@@ -20,6 +21,7 @@ import org.osmdroid.api.IGeoPoint
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class MeetPointScreenViewModel @Inject constructor(
@@ -82,9 +84,15 @@ class MeetPointScreenViewModel @Inject constructor(
         savedMapZoomLevel = zoomLevel
     }
 
-    fun createMeetPoint(createMeetPoint: CreateMeetPoint) {
+    fun createMeetPoint(createMeetPoint: CreateMeetPoint, onHttpError: (HttpException) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            meetPointInteractor.createMeetPoint(createMeetPoint)
+            try {
+                meetPointInteractor.createMeetPoint(createMeetPoint)
+            } catch (httpException: HttpException) {
+                viewModelScope.launch(Dispatchers.Main) {
+                    onHttpError(httpException)
+                }
+            }
         }
     }
 
@@ -100,9 +108,9 @@ class MeetPointScreenViewModel @Inject constructor(
         }
     }
 
-    fun deleteMeetPoint(meetPointId: String) {
+    fun deleteMeetPoint(deleteMeetPoint: DeleteMeetPoint) {
         viewModelScope.launch(Dispatchers.IO) {
-            meetPointInteractor.deleteMeetPoint(meetPointId)
+            meetPointInteractor.deleteMeetPoint(deleteMeetPoint)
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.swaptech.meet.domain.meet.interactor
 
 import com.swaptech.meet.domain.meet.model.CreateMeetPoint
+import com.swaptech.meet.domain.meet.model.DeleteMeetPoint
 import com.swaptech.meet.domain.meet.model.MeetPointResponse
 import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
 import com.swaptech.meet.domain.meet.model.UpdateMeetPoint
@@ -26,7 +27,7 @@ class MeetPointInteractor @Inject constructor(private val repository: MeetPointR
         repository.updateMeetPoint(updateMeetPoint)
     }
 
-    suspend fun deleteMeetPoint(meetPointId: String) {
-        repository.deleteMeetPoint(meetPointId)
+    suspend fun deleteMeetPoint(deleteMeetPoint: DeleteMeetPoint) {
+        repository.deleteMeetPoint(deleteMeetPoint)
     }
 }

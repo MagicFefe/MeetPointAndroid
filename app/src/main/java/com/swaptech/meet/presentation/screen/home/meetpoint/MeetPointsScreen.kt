@@ -29,6 +29,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.swaptech.meet.R
 import com.swaptech.meet.domain.meet.model.CreateMeetPoint
+import com.swaptech.meet.domain.meet.model.DeleteMeetPoint
 import com.swaptech.meet.domain.meet.model.UpdateMeetPoint
 import com.swaptech.meet.domain.user.model.UserResponse
 import com.swaptech.meet.presentation.CITY_LEVEL_ZOOM
@@ -173,7 +174,18 @@ fun MeetPointsScreen(
                                 latitude = marker.position.latitude,
                                 longitude = marker.position.longitude
                             )
-                            viewModel.createMeetPoint(newMeetPoint)
+                            viewModel.createMeetPoint(
+                                createMeetPoint = newMeetPoint,
+                                onHttpError = { error ->
+                                    if (error.code() == 409) {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.meet_point_already_exists,
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            )
                         }
                         state.map.overlays.remove(viewModel.meetPointMarker)
                         viewModel.removeMeetPointMarker()
@@ -184,7 +196,7 @@ fun MeetPointsScreen(
                 visible = screenState is MeetPointScreenState.ShowMeetPointDetails,
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                if(screenState is MeetPointScreenState.ShowMeetPointDetails) {
+                if (screenState is MeetPointScreenState.ShowMeetPointDetails) {
                     viewModel.getMeetPointById(screenState.meetPointId)
                 }
                 clickedMeetPoint?.let {
@@ -218,7 +230,11 @@ fun MeetPointsScreen(
                             }
                             IconButton(
                                 onClick = {
-                                    viewModel.deleteMeetPoint(clickedMeetPoint.id)
+                                    val deleteMeetPoint = DeleteMeetPoint(
+                                        id = clickedMeetPoint.id,
+                                        authorId = clickedMeetPoint.authorId
+                                    )
+                                    viewModel.deleteMeetPoint(deleteMeetPoint)
                                     viewModel.hideMeetPointDetails()
                                 }
                             ) {
@@ -274,12 +290,12 @@ fun MeetPointsScreen(
                             if (!dataIsValid) {
                                 return@MeetPointCreationUpdateCard
                             }
-                            val updateMeetPointModel = UpdateMeetPoint(
+                            val updateMeetPoint = UpdateMeetPoint(
                                 id = clickedMeetPoint.id,
                                 meetName = meetPointName,
                                 meetDescription = meetPointDescription
                             )
-                            viewModel.updateMeetPoint(updateMeetPointModel)
+                            viewModel.updateMeetPoint(updateMeetPoint)
                             viewModel.showMeetPointDetails(clickedMeetPoint.id)
                         }
                     )
