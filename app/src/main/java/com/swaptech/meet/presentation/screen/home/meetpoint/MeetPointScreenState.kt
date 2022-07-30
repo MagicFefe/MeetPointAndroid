@@ -5,5 +5,6 @@ import org.osmdroid.views.MapView
 sealed class MeetPointScreenState {
     object Idle : MeetPointScreenState()
     class CreateMeetPoint(val map: MapView) : MeetPointScreenState()
-    object ShowMeetPointDetails : MeetPointScreenState()
+    class ShowMeetPointDetails(val meetPointId: String) : MeetPointScreenState()
+    object UpdateMeetPoint: MeetPointScreenState()
 }

@@ -5,9 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.swaptech.meet.domain.meet.CreateMeetPoint
-import com.swaptech.meet.domain.meet.MeetPointInteractor
-import com.swaptech.meet.domain.meet.MeetPointResponseDetails
+import com.swaptech.meet.domain.meet.model.CreateMeetPoint
+import com.swaptech.meet.domain.meet.interactor.MeetPointInteractor
+import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
+import com.swaptech.meet.domain.meet.model.UpdateMeetPoint
 import com.swaptech.meet.presentation.WORLD_LEVEL_ZOOM
 import com.swaptech.meet.presentation.utils.bufferPrevious
 import kotlinx.coroutines.Dispatchers
@@ -61,8 +62,12 @@ class MeetPointScreenViewModel @Inject constructor(
         screenState = MeetPointScreenState.Idle
     }
 
-    fun showMeetPointDetails() {
-        screenState = MeetPointScreenState.ShowMeetPointDetails
+    fun showUpdateMeetPointCard() {
+        screenState = MeetPointScreenState.UpdateMeetPoint
+    }
+
+    fun showMeetPointDetails(meetPointId: String) {
+        screenState = MeetPointScreenState.ShowMeetPointDetails(meetPointId)
     }
 
     fun hideMeetPointDetails() {
@@ -80,6 +85,12 @@ class MeetPointScreenViewModel @Inject constructor(
     fun createMeetPoint(createMeetPoint: CreateMeetPoint) {
         viewModelScope.launch(Dispatchers.IO) {
             meetPointInteractor.createMeetPoint(createMeetPoint)
+        }
+    }
+
+    fun updateMeetPoint(updateMeetPoint: UpdateMeetPoint) {
+        viewModelScope.launch(Dispatchers.IO) {
+            meetPointInteractor.updateMeetPoint(updateMeetPoint)
         }
     }
 

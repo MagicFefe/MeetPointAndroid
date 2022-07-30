@@ -41,4 +41,8 @@
     <string name="more">More</string>
     <string name="enter_country_name">Enter country name</string>
     <string name="city_name_is_too_long">City name is too long</string>
+    <string name="update_meet_point">Update meet point</string>
+    <string name="max_length_of_meet_point_name_exceeded">Max length of MeetPoint\'s name is 15</string>
+    <string name="meet_point_name_cannot_be_empty">MeetPoint name cannot be empty</string>
+    <string name="meet_point_description_is_too_long">MeetPoint description is too long</string>
 </resources>

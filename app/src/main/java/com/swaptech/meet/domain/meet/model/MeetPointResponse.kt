@@ -1,17 +1,11 @@
-package com.swaptech.meet.domain.meet
+package com.swaptech.meet.domain.meet.model
 
 import com.google.gson.annotations.SerializedName
 
-data class MeetPointResponseDetails(
+data class MeetPointResponse(
     val id: String,
     @SerializedName("author_id")
     val authorId: String,
-    @SerializedName("author_name")
-    val authorName: String,
-    @SerializedName("author_surname")
-    val authorSurname: String,
-    @SerializedName("author_image")
-    val authorImage: String,
     @SerializedName("meet_name")
     val meetName: String,
     @SerializedName("meet_description")

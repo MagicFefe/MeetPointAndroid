@@ -1,6 +1,6 @@
 package com.swaptech.meet.data.meetpoint
 
-import com.swaptech.meet.domain.meet.MeetPointResponse
+import com.swaptech.meet.domain.meet.model.MeetPointResponse
 import com.tinder.scarlet.ws.Receive
 import com.tinder.scarlet.ws.Send
 import kotlinx.coroutines.channels.ReceiveChannel

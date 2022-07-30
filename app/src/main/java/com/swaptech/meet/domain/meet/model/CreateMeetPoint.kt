@@ -1,4 +1,4 @@
-package com.swaptech.meet.domain.meet
+package com.swaptech.meet.domain.meet.model
 
 import com.google.gson.annotations.SerializedName
 

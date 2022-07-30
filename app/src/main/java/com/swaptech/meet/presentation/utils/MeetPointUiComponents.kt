@@ -72,8 +72,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.swaptech.meet.R
-import com.swaptech.meet.domain.meet.MeetPointResponse
-import com.swaptech.meet.domain.meet.MeetPointResponseDetails
+import com.swaptech.meet.domain.meet.model.MeetPointResponse
+import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
 import com.swaptech.meet.presentation.MAPNIK_512
 import com.swaptech.meet.presentation.WORLD_LEVEL_ZOOM
 import com.swaptech.meet.presentation.utils.country_chooser.CountryChooser
@@ -230,7 +230,7 @@ fun MeetPointMap(
 }
 
 @Composable
-fun MeetPointCreationEditCard(
+fun MeetPointCreationUpdateCard(
     cardTitle: String,
     meetPointName: String,
     onMeetPointNameChange: (String) -> Unit,
@@ -303,7 +303,7 @@ fun MeetPointCreationMin_Preview() {
     val (description, onDescriptionChange) = rememberSaveable {
         mutableStateOf("")
     }
-    MeetPointCreationEditCard(
+    MeetPointCreationUpdateCard(
         "",
         name,
         onNameChange,
