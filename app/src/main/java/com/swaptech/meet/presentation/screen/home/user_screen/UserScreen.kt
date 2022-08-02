@@ -52,7 +52,6 @@ fun UserScreen(
         ) {
             UserUpdateScreen(
                 userId = clickedUserId,
-                localUserId = localUserId,
                 viewModel = viewModel(
                     modelClass = UserUpdateScreenViewModel::class.java,
                     factory = viewModelFactory

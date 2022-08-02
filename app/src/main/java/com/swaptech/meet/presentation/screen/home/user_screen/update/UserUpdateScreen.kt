@@ -22,13 +22,16 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
 import com.swaptech.meet.domain.user.model.UserUpdate
+import com.swaptech.meet.presentation.MAX_ABOUT_FIELD_LENGTH
 import com.swaptech.meet.presentation.MAX_CITY_NAME_LENGTH
+import com.swaptech.meet.presentation.MAX_DOB_LENGTH
 import com.swaptech.meet.presentation.MAX_EMAIL_LENGTH
 import com.swaptech.meet.presentation.MAX_NAME_SURNAME_LENGTH
 import com.swaptech.meet.presentation.navigation.destination.User
 import com.swaptech.meet.presentation.utils.FetchWithParam
 import com.swaptech.meet.presentation.utils.UpdateSignUpUserForm
 import com.swaptech.meet.presentation.utils.Validator
+import com.swaptech.meet.presentation.utils.formatToDate
 import com.swaptech.meet.presentation.utils.replaceTo
 import com.swaptech.meet.presentation.utils.toBase64
 import com.swaptech.meet.presentation.utils.toByteArray
@@ -38,7 +41,6 @@ import com.swaptech.meet.presentation.viewmodel.RemoteUserViewModel
 @Composable
 fun UserUpdateScreen(
     userId: String,
-    localUserId: String,
     remoteUserViewModel: RemoteUserViewModel,
     localUserViewModel: LocalUserViewModel,
     viewModel: UserUpdateScreenViewModel,
@@ -73,6 +75,14 @@ fun UserUpdateScreen(
         var newPassword by rememberSaveable {
             mutableStateOf("")
         }
+        var about by rememberSaveable {
+            mutableStateOf(userById.about)
+        }
+        var date by rememberSaveable {
+            mutableStateOf(
+                userById.dob.split("-").fold("") { start, item -> start + item }
+            )
+        }
         UpdateSignUpUserForm(
             name = name,
             onNameChange = { input ->
@@ -103,6 +113,18 @@ fun UserUpdateScreen(
                     city = input
                 }
             },
+            about = about,
+            onAboutChange = { input ->
+                if (input.length <= MAX_ABOUT_FIELD_LENGTH) {
+                    about = input
+                }
+            },
+            date = date,
+            onDateChange = { input ->
+                if (input.length <= MAX_DOB_LENGTH) {
+                    date = input
+                }
+            },
             image = userImage,
             onImageChooseResult = { selectedImage ->
                 selectedImage?.let {
@@ -120,7 +142,7 @@ fun UserUpdateScreen(
                     onClick = {
                         if (
                             Validator.anyFieldIsEmpty(
-                                name, surname, email, country, city, oldPassword
+                                name, surname, email, country, city, oldPassword, date
                             )
                         ) {
                             val newPasswordString = context.getString(R.string.new_password)
@@ -161,6 +183,27 @@ fun UserUpdateScreen(
                             ).show()
                             return@Button
                         }
+                        if (date.length == MAX_DOB_LENGTH) {
+                            if (Validator.dateIsNotValid(date.formatToDate())) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.enter_correct_date,
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                                return@Button
+                            }
+                        } else {
+                            Toast.makeText(context, R.string.enter_correct_date, Toast.LENGTH_SHORT)
+                                .show()
+                            return@Button
+                        }
+                        if (Validator.aboutFieldIsNotValid(about)
+                        ) {
+                            Toast.makeText(context, R.string.about_is_too_long, Toast.LENGTH_LONG)
+                                .show()
+                            return@Button
+                        }
                         if (Validator.passwordIsNotValid(oldPassword)) {
                             Toast.makeText(
                                 context,
@@ -188,17 +231,18 @@ fun UserUpdateScreen(
                             return@Button
                         }
                         val userUpdate = UserUpdate(
-                            id = userById.id,
-                            name = name,
-                            surname = surname,
-                            newEmail = email,
-                            oldEmail = userById.email,
-                            country = country,
-                            city = city,
+                            email = email,
                             oldPassword = oldPassword,
                             newPassword = newPassword.ifEmpty {
                                 oldPassword
                             },
+                            id = userById.id,
+                            name = name,
+                            surname = surname,
+                            dob = date.formatToDate(),
+                            about = about,
+                            country = country,
+                            city = city,
                             image = String(
                                 userImage.toBase64()
                             )
@@ -206,7 +250,6 @@ fun UserUpdateScreen(
                         viewModel.updateUser(
                             user = userUpdate,
                             onSuccess = { newUser ->
-                                localUserViewModel.deleteLocalUserById(localUserId)
                                 localUserViewModel.saveLocalUser(newUser)
                                 nestedNavController.replaceTo(User.Details.route)
                             },

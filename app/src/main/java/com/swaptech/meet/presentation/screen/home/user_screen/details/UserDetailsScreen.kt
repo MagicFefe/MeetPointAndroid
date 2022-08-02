@@ -79,8 +79,8 @@ fun UserDetailsScreen(
                         modifier = Modifier
                             .padding(10.dp)
                             .size(100.dp),
-                        profileName = userById.name,
-                        profileSurname = userById.surname,
+                        userName = userById.name,
+                        userSurname = userById.surname,
                         profileImage = userById.image.toByteArray()
                     )
                     Box(
@@ -94,6 +94,16 @@ fun UserDetailsScreen(
                             .fillMaxWidth()
                             .padding(10.dp)
                     ) {
+                        if(userById.about.isNotEmpty()) {
+                            UserDetailItem(
+                                profileDetailName = stringResource(id = R.string.about),
+                                profileDetailContent = userById.about
+                            )
+                        }
+                        UserDetailItem(
+                            profileDetailName = stringResource(id = R.string.date_of_birth),
+                            profileDetailContent = userById.dob
+                        )
                         UserDetailItem(
                             profileDetailName = stringResource(id = R.string.email),
                             profileDetailContent = userById.email

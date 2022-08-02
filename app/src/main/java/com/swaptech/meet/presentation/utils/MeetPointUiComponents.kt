@@ -41,6 +41,7 @@ import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,10 +57,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -392,8 +395,8 @@ fun MeetPointDetails(
                         modifier = Modifier
                             .padding(top = 10.dp)
                             .size(20.dp),
-                        profileName = meetPoint.authorName,
-                        profileSurname = meetPoint.authorSurname,
+                        userName = meetPoint.authorName,
+                        userSurname = meetPoint.authorSurname,
                         profileImage = decodedProfileImage
                     )
                 }
@@ -463,8 +466,8 @@ fun UserImage(
 @Composable
 fun UserHeader(
     modifier: Modifier,
-    profileName: String,
-    profileSurname: String,
+    userName: String,
+    userSurname: String,
     profileImage: ByteArray?
 ) {
     Column(
@@ -476,12 +479,12 @@ fun UserHeader(
         )
         Spacer(modifier = Modifier.padding(2.dp))
         Text(
-            text = profileName,
+            text = userName,
             fontSize = 16.sp
         )
         Text(
             modifier = Modifier.padding(bottom = 10.dp),
-            text = profileSurname,
+            text = userSurname,
             fontSize = 16.sp
         )
     }
@@ -554,6 +557,10 @@ fun UpdateSignUpUserForm(
     onCountryClick: (String) -> Unit,
     city: String,
     onCityChange: (String) -> Unit,
+    about: String,
+    onAboutChange: (String) -> Unit,
+    date: String,
+    onDateChange: (String) -> Unit,
     image: ByteArray? = null,
     onImageChooseResult: (ByteArray?) -> Unit,
     onCloseButtonClick: () -> Unit,
@@ -670,6 +677,37 @@ fun UpdateSignUpUserForm(
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
                     )
+                )
+                CompositionLocalProvider(
+                    LocalTextToolbar provides EmptyTextToolbar
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier.width(280.dp),
+                        value = date,
+                        onValueChange = onDateChange,
+                        label = {
+                            Text(text = stringResource(id = R.string.date_of_birth))
+                        },
+                        placeholder = {
+                            Text(text = "dd-mm-yyyy")
+                        },
+                        singleLine = true,
+                        maxLines = 1,
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next,
+                            keyboardType = KeyboardType.Number
+                        ),
+                        visualTransformation = DateVisualTransformation()
+                    )
+                }
+                OutlinedTextField(
+                    modifier = Modifier.width(280.dp),
+                    value = about,
+                    onValueChange = onAboutChange,
+                    label = {
+                        Text(text = stringResource(id = R.string.about_placeholder))
+                    },
+                    maxLines = 5
                 )
                 content()
             }

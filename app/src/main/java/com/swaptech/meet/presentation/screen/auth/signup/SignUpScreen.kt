@@ -24,13 +24,16 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
 import com.swaptech.meet.domain.user.model.UserRegister
+import com.swaptech.meet.presentation.MAX_ABOUT_FIELD_LENGTH
 import com.swaptech.meet.presentation.MAX_CITY_NAME_LENGTH
+import com.swaptech.meet.presentation.MAX_DOB_LENGTH
 import com.swaptech.meet.presentation.MAX_EMAIL_LENGTH
 import com.swaptech.meet.presentation.MAX_NAME_SURNAME_LENGTH
 import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.screen.auth.AuthUserViewModel
 import com.swaptech.meet.presentation.utils.UpdateSignUpUserForm
 import com.swaptech.meet.presentation.utils.Validator
+import com.swaptech.meet.presentation.utils.formatToDate
 import com.swaptech.meet.presentation.utils.replaceTo
 import com.swaptech.meet.presentation.utils.toBase64
 
@@ -60,6 +63,12 @@ fun SignUpScreen(
     var password by rememberSaveable {
         mutableStateOf("")
     }
+    var about by rememberSaveable {
+        mutableStateOf("")
+    }
+    var date by rememberSaveable {
+        mutableStateOf("")
+    }
     val context = LocalContext.current
     UpdateSignUpUserForm(
         name = name,
@@ -86,8 +95,20 @@ fun SignUpScreen(
         },
         city = city,
         onCityChange = { input ->
-            if (input.length < MAX_CITY_NAME_LENGTH) {
+            if (input.length <= MAX_CITY_NAME_LENGTH) {
                 city = input
+            }
+        },
+        about = about,
+        onAboutChange = { input ->
+            if (input.length <= MAX_ABOUT_FIELD_LENGTH) {
+                about = input
+            }
+        },
+        date = date,
+        onDateChange = { input ->
+            if (input.length <= MAX_DOB_LENGTH) {
+                date = input
             }
         },
         onImageChooseResult = { selectedImage ->
@@ -122,7 +143,7 @@ fun SignUpScreen(
                 onClick = {
                     if (
                         Validator.anyFieldIsEmpty(
-                            name, surname, email, country, city, password
+                            name, surname, email, country, city, password, date
                         )
                     ) {
                         Toast.makeText(
@@ -158,6 +179,23 @@ fun SignUpScreen(
                         ).show()
                         return@Button
                     }
+                    if(date.length == MAX_DOB_LENGTH) {
+                        if (Validator.dateIsNotValid(date.formatToDate())) {
+                            Toast.makeText(context, R.string.enter_correct_date, Toast.LENGTH_SHORT)
+                                .show()
+                            return@Button
+                        }
+                    } else {
+                        Toast.makeText(context, R.string.enter_correct_date, Toast.LENGTH_SHORT)
+                            .show()
+                        return@Button
+                    }
+                    if (Validator.aboutFieldIsNotValid(about)
+                    ) {
+                        Toast.makeText(context, R.string.about_is_too_long, Toast.LENGTH_LONG)
+                            .show()
+                        return@Button
+                    }
                     if (Validator.passwordIsNotValid(password)) {
                         Toast.makeText(
                             context,
@@ -169,6 +207,8 @@ fun SignUpScreen(
                     val userRegister = UserRegister(
                         name = name,
                         surname = surname,
+                        about = about,
+                        dob = date.formatToDate(),
                         email = email,
                         country = country,
                         city = city,

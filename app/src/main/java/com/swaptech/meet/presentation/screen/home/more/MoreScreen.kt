@@ -7,20 +7,27 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.utils.FetchWithParam
-import com.swaptech.meet.presentation.utils.UserImage
+import com.swaptech.meet.presentation.utils.UserHeader
 import com.swaptech.meet.presentation.utils.toByteArray
 import com.swaptech.meet.presentation.viewmodel.RemoteUserViewModel
 
@@ -36,7 +43,7 @@ fun MoreScreen(
         onLoading = {
             Column(
                 modifier = Modifier
-                    .background(Color.Gray)
+                    .background(MaterialTheme.colors.surface)
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -47,22 +54,26 @@ fun MoreScreen(
     ) { userById ->
         Column(
             modifier = Modifier
-                .background(Color.Gray)
-                .fillMaxSize()
+                .background(MaterialTheme.colors.surface)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(10.dp))
-            Row(
+            Column(
                 modifier = Modifier
                     .clickable {
                         nestedNavController.navigate(Root.UserScreen.getNavigationRoute(localUserId)) {
                             launchSingleTop = true
                         }
-                    },
-                verticalAlignment = Alignment.CenterVertically
+                    }
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                UserImage(
-                    modifier = Modifier.size(50.dp),
-                    userImage = userById.image.toByteArray()
+                UserHeader(
+                    modifier = Modifier.size(100.dp),
+                    userName = userById.name,
+                    userSurname = userById.surname,
+                    profileImage = userById.image.toByteArray()
                 )
                 Spacer(modifier = Modifier.width(2.dp))
                 Column(

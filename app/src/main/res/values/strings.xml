@@ -32,7 +32,7 @@
     <string name="done">Done</string>
     <string name="old_password">Old password</string>
     <string name="new_password">New password</string>
-    <string name="enter_new_password">Enter new password</string>
+    <string name="enter_new_password">Enter new password(not required)</string>
     <string name="enter_old_password">Enter old password</string>
     <string name="new_and_old_password_the_same_message">New and old password must be different</string>
     <string name="only_field_name_can_be_empty">Only \"%1$s\" field can be empty</string>
@@ -46,4 +46,9 @@
     <string name="meet_point_name_cannot_be_empty">MeetPoint name cannot be empty</string>
     <string name="meet_point_description_is_too_long">MeetPoint description is too long</string>
     <string name="meet_point_already_exists">MeetPoint already exists, if you want create new MeetPoint, delete old MeetPoint</string>
+    <string name="about">About</string>
+    <string name="about_placeholder">About(not required)</string>
+    <string name="date_of_birth">Date of birth</string>
+    <string name="about_is_too_long">\"About\" field is too long</string>
+    <string name="enter_correct_date">Enter correct date</string>
 </resources>

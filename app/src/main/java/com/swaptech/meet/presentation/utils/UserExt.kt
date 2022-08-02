@@ -11,7 +11,9 @@ fun UserResponse.toUserDB(): UserDB =
         surname = surname,
         email = email,
         country = country,
-        city = city
+        city = city,
+        dob = dob,
+        about = about
     )
 
 fun UserDB.toUserResponse(): UserResponse =
@@ -22,7 +24,9 @@ fun UserDB.toUserResponse(): UserResponse =
         email = email,
         country = country,
         city = city,
-        image = ""
+        image = "",
+        dob = dob,
+        about = about,
     )
 
 fun UserResponseWithToken.toUserResponse(): UserResponse =
@@ -33,5 +37,7 @@ fun UserResponseWithToken.toUserResponse(): UserResponse =
         email = email,
         country = country,
         city = city,
-        image = image
+        image = image,
+        dob = dob,
+        about = about
     )
