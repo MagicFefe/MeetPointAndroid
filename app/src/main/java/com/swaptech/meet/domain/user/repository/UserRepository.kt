@@ -1,7 +1,5 @@
 package com.swaptech.meet.domain.user.repository
 
-import com.swaptech.meet.domain.user.model.UserRegister
-import com.swaptech.meet.domain.user.model.UserMinimal
 import com.swaptech.meet.domain.user.model.UserResponse
 import com.swaptech.meet.domain.user.model.UserResponseWithToken
 import com.swaptech.meet.domain.user.model.UserUpdate
@@ -12,8 +10,6 @@ interface UserRepository {
     suspend fun deleteLocalUserById(userId: String)
     fun getLocalUser(): Flow<UserResponse?>
     suspend fun getUserById(userId: String): UserResponse
-    suspend fun signInUser(user: UserMinimal): UserResponseWithToken
-    suspend fun signUpUser(user: UserRegister): UserResponseWithToken
     suspend fun updateUser(user: UserUpdate): UserResponseWithToken
     suspend fun deleteUser(userId: String)
     suspend fun saveUserToken(token: String)

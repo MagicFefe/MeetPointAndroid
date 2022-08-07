@@ -23,7 +23,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
-import com.swaptech.meet.domain.user.model.UserRegister
+import com.swaptech.meet.domain.auth.SignUp
 import com.swaptech.meet.presentation.MAX_ABOUT_FIELD_LENGTH
 import com.swaptech.meet.presentation.MAX_CITY_NAME_LENGTH
 import com.swaptech.meet.presentation.MAX_DOB_LENGTH
@@ -58,6 +58,9 @@ fun SignUpScreen(
         mutableStateOf("")
     }
     var city by rememberSaveable {
+        mutableStateOf("")
+    }
+    var gender by rememberSaveable {
         mutableStateOf("")
     }
     var password by rememberSaveable {
@@ -98,6 +101,10 @@ fun SignUpScreen(
             if (input.length <= MAX_CITY_NAME_LENGTH) {
                 city = input
             }
+        },
+        gender = gender,
+        onGenderChooserItemClick = { selected ->
+            gender = selected
         },
         about = about,
         onAboutChange = { input ->
@@ -143,7 +150,7 @@ fun SignUpScreen(
                 onClick = {
                     if (
                         Validator.anyFieldIsEmpty(
-                            name, surname, email, country, city, password, date
+                            name, surname, email, country, city, password, date, gender
                         )
                     ) {
                         Toast.makeText(
@@ -204,11 +211,12 @@ fun SignUpScreen(
                         ).show()
                         return@Button
                     }
-                    val userRegister = UserRegister(
+                    val signUp = SignUp(
                         name = name,
                         surname = surname,
                         about = about,
                         dob = date.formatToDate(),
+                        gender = gender,
                         email = email,
                         country = country,
                         city = city,
@@ -220,7 +228,7 @@ fun SignUpScreen(
                         }
                     )
                     authUserViewModel.signUpUser(
-                        userRegister = userRegister,
+                        signUp = signUp,
                         onSuccess = {
                             navController.replaceTo(Root.Home.route)
                         },

@@ -10,6 +10,7 @@ data class UserDB(
     val name: String,
     val surname: String,
     val dob: String,
+    val gender: String,
     val about: String,
     val email: String,
     val country: String,

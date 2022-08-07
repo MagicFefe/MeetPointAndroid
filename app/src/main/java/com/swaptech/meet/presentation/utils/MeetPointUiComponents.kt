@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,6 +30,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -59,6 +65,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -95,6 +102,7 @@ import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import androidx.compose.ui.graphics.Color as ColorCompose
 
 @Composable
 fun MeetPointMap(
@@ -544,6 +552,7 @@ fun OutlinedClickableTextField(
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UpdateSignUpUserForm(
     modifier: Modifier = Modifier,
@@ -557,6 +566,8 @@ fun UpdateSignUpUserForm(
     onCountryClick: (String) -> Unit,
     city: String,
     onCityChange: (String) -> Unit,
+    gender: String,
+    onGenderChooserItemClick: (String) -> Unit,
     about: String,
     onAboutChange: (String) -> Unit,
     date: String,
@@ -571,6 +582,9 @@ fun UpdateSignUpUserForm(
     val scrollState = rememberScrollState()
     var userImage by rememberSaveable {
         mutableStateOf(image)
+    }
+    var genderChooserExpanded by rememberSaveable {
+        mutableStateOf(false)
     }
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
@@ -678,6 +692,48 @@ fun UpdateSignUpUserForm(
                         imeAction = ImeAction.Next
                     )
                 )
+                ExposedDropdownMenuBox(
+                    expanded = genderChooserExpanded,
+                    onExpandedChange = {
+                        genderChooserExpanded = !genderChooserExpanded
+                    }
+                ) {
+                    CompositionLocalProvider(
+                        LocalTextToolbar provides EmptyTextToolbar
+                    ) {
+                        OutlinedTextField(
+                            value = gender,
+                            onValueChange = onGenderChooserItemClick,
+                            label = {
+                                Text(text = stringResource(id = R.string.choose_your_gender))
+                            },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = genderChooserExpanded
+                                )
+                            },
+                            readOnly = true
+                        )
+                    }
+                    ExposedDropdownMenu(
+                        expanded = genderChooserExpanded,
+                        onDismissRequest = {
+                            genderChooserExpanded = false
+                        }
+                    ) {
+                        val genders = stringArrayResource(id = R.array.genders)
+                        genders.forEach { gender ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    onGenderChooserItemClick(gender)
+                                    genderChooserExpanded = false
+                                }
+                            ) {
+                                Text(text = gender)
+                            }
+                        }
+                    }
+                }
                 CompositionLocalProvider(
                     LocalTextToolbar provides EmptyTextToolbar
                 ) {
@@ -723,4 +779,16 @@ fun UpdateSignUpUserForm(
             }
         )
     }
+}
+
+@Composable
+fun Separator(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(1.dp)
+            .fillMaxWidth()
+            .background(ColorCompose.LightGray)
+    )
 }

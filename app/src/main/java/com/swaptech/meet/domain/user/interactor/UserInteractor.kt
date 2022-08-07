@@ -1,7 +1,5 @@
 package com.swaptech.meet.domain.user.interactor
 
-import com.swaptech.meet.domain.user.model.UserMinimal
-import com.swaptech.meet.domain.user.model.UserRegister
 import com.swaptech.meet.domain.user.model.UserResponse
 import com.swaptech.meet.domain.user.model.UserResponseWithToken
 import com.swaptech.meet.domain.user.model.UserUpdate
@@ -26,12 +24,6 @@ class UserInteractor @Inject constructor(
 
     suspend fun getUserById(userId: String): UserResponse =
         userRepository.getUserById(userId)
-
-    suspend fun signInUser(user: UserMinimal): UserResponseWithToken =
-        userRepository.signInUser(user)
-
-    suspend fun signUpUser(user: UserRegister): UserResponseWithToken =
-        userRepository.signUpUser(user)
 
     suspend fun updateUser(user: UserUpdate): UserResponseWithToken =
         userRepository.updateUser(user)

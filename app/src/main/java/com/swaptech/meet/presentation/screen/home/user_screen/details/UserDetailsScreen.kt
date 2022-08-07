@@ -1,10 +1,7 @@
 package com.swaptech.meet.presentation.screen.home.user_screen.details
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +27,7 @@ import com.swaptech.meet.R
 import com.swaptech.meet.presentation.navigation.destination.Auth
 import com.swaptech.meet.presentation.navigation.destination.User
 import com.swaptech.meet.presentation.utils.FetchWithParam
+import com.swaptech.meet.presentation.utils.Separator
 import com.swaptech.meet.presentation.utils.UserHeader
 import com.swaptech.meet.presentation.utils.VerticalScrollableContent
 import com.swaptech.meet.presentation.utils.replaceTo
@@ -83,23 +81,22 @@ fun UserDetailsScreen(
                         userSurname = userById.surname,
                         profileImage = userById.image.toByteArray()
                     )
-                    Box(
-                        modifier = Modifier
-                            .height(1.dp)
-                            .fillMaxWidth()
-                            .background(Color.LightGray)
-                    )
+                    Separator()
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(10.dp)
                     ) {
-                        if(userById.about.isNotEmpty()) {
+                        if (userById.about.isNotEmpty()) {
                             UserDetailItem(
                                 profileDetailName = stringResource(id = R.string.about),
                                 profileDetailContent = userById.about
                             )
                         }
+                        UserDetailItem(
+                            profileDetailName = stringResource(id = R.string.gender),
+                            profileDetailContent = userById.gender
+                        )
                         UserDetailItem(
                             profileDetailName = stringResource(id = R.string.date_of_birth),
                             profileDetailContent = userById.dob

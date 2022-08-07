@@ -60,6 +60,9 @@ fun UserUpdateScreen(
         var city by rememberSaveable {
             mutableStateOf(userById.city)
         }
+        var gender by rememberSaveable {
+            mutableStateOf(userById.gender)
+        }
         var surname by rememberSaveable {
             mutableStateOf(userById.surname)
         }
@@ -113,6 +116,10 @@ fun UserUpdateScreen(
                     city = input
                 }
             },
+            gender = gender,
+            onGenderChooserItemClick = { selected ->
+                gender = selected
+            },
             about = about,
             onAboutChange = { input ->
                 if (input.length <= MAX_ABOUT_FIELD_LENGTH) {
@@ -142,17 +149,12 @@ fun UserUpdateScreen(
                     onClick = {
                         if (
                             Validator.anyFieldIsEmpty(
-                                name, surname, email, country, city, oldPassword, date
+                                name, surname, email, country, city, oldPassword, date, gender
                             )
                         ) {
-                            val newPasswordString = context.getString(R.string.new_password)
-                            val message = context.getString(
-                                R.string.only_field_name_can_be_empty,
-                                newPasswordString
-                            )
                             Toast.makeText(
                                 context,
-                                message,
+                                R.string.only_new_password_and_about_fields_can_be_empty,
                                 Toast.LENGTH_LONG
                             ).show()
                             return@Button
@@ -240,6 +242,7 @@ fun UserUpdateScreen(
                             name = name,
                             surname = surname,
                             dob = date.formatToDate(),
+                            gender = gender,
                             about = about,
                             country = country,
                             city = city,

@@ -2,9 +2,9 @@ package com.swaptech.meet.presentation.screen.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.swaptech.meet.domain.user.interactor.UserInteractor
-import com.swaptech.meet.domain.user.model.UserMinimal
-import com.swaptech.meet.domain.user.model.UserRegister
+import com.swaptech.meet.domain.auth.SignIn
+import com.swaptech.meet.domain.auth.SignUp
+import com.swaptech.meet.domain.auth.interactor.AuthInteractor
 import com.swaptech.meet.domain.user.model.UserResponseWithToken
 import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -14,7 +14,7 @@ import retrofit2.HttpException
 import javax.inject.Inject
 
 class AuthUserViewModel @Inject constructor(
-    private val userInteractor: UserInteractor,
+    private val authInteractor: AuthInteractor,
     private val localUserViewModel: LocalUserViewModel
 ) : ViewModel() {
 
@@ -39,13 +39,13 @@ class AuthUserViewModel @Inject constructor(
     }
 
     fun signInUser(
-        user: UserMinimal,
+        user: SignIn,
         onSuccess: () -> Unit,
         onHttpError: (HttpException) -> Unit
     ) {
         registerUser(
             block = {
-                userInteractor.signInUser(user)
+                authInteractor.signInUser(user)
             },
             onSuccess = onSuccess,
             onHttpError = onHttpError
@@ -53,13 +53,13 @@ class AuthUserViewModel @Inject constructor(
     }
 
     fun signUpUser(
-        userRegister: UserRegister,
+        signUp: SignUp,
         onSuccess: () -> Unit,
         onHttpError: (HttpException) -> Unit
     ) {
         registerUser(
             block = {
-                userInteractor.signUpUser(userRegister)
+                authInteractor.signUpUser(signUp)
             },
             onSuccess = onSuccess,
             onHttpError = onHttpError

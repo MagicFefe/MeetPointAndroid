@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
-import com.swaptech.meet.domain.user.model.UserMinimal
+import com.swaptech.meet.domain.auth.SignIn
 import com.swaptech.meet.presentation.navigation.destination.Auth
 import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.screen.auth.AuthUserViewModel
@@ -121,7 +121,7 @@ fun SignInScreen(
                             ).show()
                             return@Button
                         }
-                        val user = UserMinimal(
+                        val user = SignIn(
                             email = email,
                             password = password
                         )

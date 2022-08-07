@@ -1,8 +1,6 @@
 package com.swaptech.meet.data.user
 
 import android.content.SharedPreferences
-import com.swaptech.meet.domain.user.model.UserMinimal
-import com.swaptech.meet.domain.user.model.UserRegister
 import com.swaptech.meet.domain.user.model.UserResponse
 import com.swaptech.meet.domain.user.model.UserResponseWithToken
 import com.swaptech.meet.domain.user.model.UserUpdate
@@ -37,12 +35,6 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun getUserById(userId: String): UserResponse =
         userApi.getUserById(userId)
-
-    override suspend fun signInUser(user: UserMinimal): UserResponseWithToken =
-        userApi.signInUser(user)
-
-    override suspend fun signUpUser(user: UserRegister): UserResponseWithToken =
-        userApi.signUpUser(user)
 
     override suspend fun updateUser(user: UserUpdate): UserResponseWithToken =
         userApi.updateUser(user)

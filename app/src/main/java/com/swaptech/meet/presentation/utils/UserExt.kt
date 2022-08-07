@@ -13,6 +13,7 @@ fun UserResponse.toUserDB(): UserDB =
         country = country,
         city = city,
         dob = dob,
+        gender = gender,
         about = about
     )
 
@@ -26,6 +27,7 @@ fun UserDB.toUserResponse(): UserResponse =
         city = city,
         image = "",
         dob = dob,
+        gender = gender,
         about = about,
     )
 
@@ -39,5 +41,6 @@ fun UserResponseWithToken.toUserResponse(): UserResponse =
         city = city,
         image = image,
         dob = dob,
+        gender = gender,
         about = about
     )

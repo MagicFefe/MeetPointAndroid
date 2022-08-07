@@ -1,5 +1,6 @@
 package com.swaptech.meet.di.data.network
 
+import com.swaptech.meet.data.auth.AuthApi
 import com.swaptech.meet.data.meetpoint.MeetPointApi
 import com.swaptech.meet.data.user.UserApi
 import dagger.Module
@@ -20,4 +21,10 @@ class ApiModule {
         retrofitClient: Retrofit
     ): UserApi =
         retrofitClient.create(UserApi::class.java)
+
+    @Provides
+    fun provideAuthApi(
+        retrofitClient: Retrofit
+    ): AuthApi =
+        retrofitClient.create(AuthApi::class.java)
 }

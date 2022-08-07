@@ -35,7 +35,7 @@
     <string name="enter_new_password">Enter new password(not required)</string>
     <string name="enter_old_password">Enter old password</string>
     <string name="new_and_old_password_the_same_message">New and old password must be different</string>
-    <string name="only_field_name_can_be_empty">Only \"%1$s\" field can be empty</string>
+    <string name="only_new_password_and_about_fields_can_be_empty">Only \"New password\" and \"About\" fields can be empty</string>
     <string name="select_country">Select country</string>
     <string name="meet_points">MeetPoints</string>
     <string name="more">More</string>
@@ -51,4 +51,11 @@
     <string name="date_of_birth">Date of birth</string>
     <string name="about_is_too_long">\"About\" field is too long</string>
     <string name="enter_correct_date">Enter correct date</string>
+    <string name="choose_your_gender">Choose your gender</string>
+    <string-array name="genders">
+        <item>Male</item>
+        <item>Female</item>
+        <item>Other</item>
+    </string-array>
+    <string name="gender">Gender</string>
 </resources>
