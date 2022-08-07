@@ -17,6 +17,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.outlined.Help
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,6 +88,13 @@ fun MoreScreen(
                 },
                 text = stringResource(id = R.string.feedback),
                 icon = Icons.Outlined.Chat
+            )
+            MoreScreenListItem(
+                onItemClick = {
+                    nestedNavController.navigateSingle(Root.About.route)
+                },
+                text = stringResource(id = R.string.about_app),
+                icon = Icons.Outlined.Help
             )
         }
     }

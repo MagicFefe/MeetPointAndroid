@@ -26,6 +26,7 @@ import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreenViewModel
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointsScreen
 import com.swaptech.meet.presentation.screen.home.more.MoreScreen
+import com.swaptech.meet.presentation.screen.home.more.about.AboutScreen
 import com.swaptech.meet.presentation.screen.home.more.feedback.FeedbackScreen
 import com.swaptech.meet.presentation.screen.home.more.feedback.FeedbackScreenViewModel
 import com.swaptech.meet.presentation.screen.home.user_screen.UserScreen
@@ -137,6 +138,9 @@ fun HomeScreen(
                         ),
                         nestedNavController = bottomBarNavController
                     )
+                }
+                composable(route = Root.About.route) {
+                    AboutScreen()
                 }
             }
         }

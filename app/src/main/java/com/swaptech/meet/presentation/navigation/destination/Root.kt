@@ -12,6 +12,7 @@ sealed class Root(open val route: String) {
         fun getNavigationRoute(userId: String) = "$rootRouteName/$userId"
     }
     object Feedback: Root("feedback")
+    object About: Root("about")
     companion object {
         const val route = "root"
     }
