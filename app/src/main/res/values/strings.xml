@@ -58,4 +58,10 @@
         <item>Other</item>
     </string-array>
     <string name="gender">Gender</string>
+    <string name="feedback">Feedback</string>
+    <string name="enter_your_feedback">Enter your feedback</string>
+    <string name="feedback_cannot_be_empty">Feedback cannot be empty</string>
+    <string name="feedback_is_too_long">Feedback is too long</string>
+    <string name="send">Send</string>
+    <string name="thanks_for_feedback">Thanks for feedback!</string>
 </resources>

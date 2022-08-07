@@ -10,3 +10,10 @@ fun NavController.replaceTo(route: String, builder: NavOptionsBuilder.() -> Unit
         builder()
     }
 }
+
+fun NavController.navigateSingle(route: String, builder: NavOptionsBuilder.() -> Unit = {}) {
+    navigate(route) {
+        launchSingleTop = true
+        builder()
+    }
+}

@@ -11,6 +11,7 @@ sealed class Root(open val route: String) {
         private const val rootRouteName = "user_screen"
         fun getNavigationRoute(userId: String) = "$rootRouteName/$userId"
     }
+    object Feedback: Root("feedback")
     companion object {
         const val route = "root"
     }

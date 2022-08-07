@@ -23,9 +23,11 @@ import androidx.navigation.navArgument
 import com.swaptech.meet.di.presentation.viewmodel.ViewModelFactory
 import com.swaptech.meet.presentation.navigation.destination.Home
 import com.swaptech.meet.presentation.navigation.destination.Root
-import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointsScreen
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreenViewModel
+import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointsScreen
 import com.swaptech.meet.presentation.screen.home.more.MoreScreen
+import com.swaptech.meet.presentation.screen.home.more.feedback.FeedbackScreen
+import com.swaptech.meet.presentation.screen.home.more.feedback.FeedbackScreenViewModel
 import com.swaptech.meet.presentation.screen.home.user_screen.UserScreen
 import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
 import com.swaptech.meet.presentation.viewmodel.RemoteUserViewModel
@@ -123,6 +125,18 @@ fun HomeScreen(
                             viewModelFactory = viewModelFactory
                         )
                     }
+                }
+                composable(
+                    route = Root.Feedback.route
+                ) {
+                    FeedbackScreen(
+                        userId = localUser.id,
+                        feedbackScreenViewModel = viewModel(
+                            modelClass = FeedbackScreenViewModel::class.java,
+                            factory = viewModelFactory
+                        ),
+                        nestedNavController = bottomBarNavController
+                    )
                 }
             }
         }

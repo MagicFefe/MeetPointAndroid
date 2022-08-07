@@ -4,21 +4,32 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.swaptech.meet.R
 import com.swaptech.meet.presentation.navigation.destination.Root
 import com.swaptech.meet.presentation.utils.FetchWithParam
+import com.swaptech.meet.presentation.utils.Separator
 import com.swaptech.meet.presentation.utils.UserHeader
+import com.swaptech.meet.presentation.utils.navigateSingle
 import com.swaptech.meet.presentation.utils.toByteArray
 import com.swaptech.meet.presentation.viewmodel.RemoteUserViewModel
 
@@ -53,9 +64,11 @@ fun MoreScreen(
             Column(
                 modifier = Modifier
                     .clickable {
-                        nestedNavController.navigate(Root.UserScreen.getNavigationRoute(localUserId)) {
-                            launchSingleTop = true
-                        }
+                        nestedNavController.navigateSingle(
+                            Root.UserScreen.getNavigationRoute(
+                                localUserId
+                            )
+                        )
                     }
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -66,14 +79,38 @@ fun MoreScreen(
                     userSurname = userById.surname,
                     profileImage = userById.image.toByteArray()
                 )
-                Spacer(modifier = Modifier.width(2.dp))
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = userById.name)
-                    Text(text = userById.surname)
-                }
             }
+            Separator()
+            MoreScreenListItem(
+                onItemClick = {
+                    nestedNavController.navigateSingle(Root.Feedback.route)
+                },
+                text = stringResource(id = R.string.feedback),
+                icon = Icons.Outlined.Chat
+            )
         }
+    }
+}
+
+@Composable
+fun MoreScreenListItem(
+    modifier: Modifier = Modifier,
+    onItemClick: () -> Unit,
+    text: String,
+    icon: ImageVector
+) {
+    Row(
+        modifier = modifier
+            .clickable(onClick = onItemClick)
+            .padding(10.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null
+        )
+        Spacer(modifier = Modifier.padding(5.dp))
+        Text(text = text)
     }
 }
