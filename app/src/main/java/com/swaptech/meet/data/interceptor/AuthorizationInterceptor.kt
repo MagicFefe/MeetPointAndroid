@@ -12,7 +12,6 @@ class AuthorizationInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val token = sharedPreferences.getString(AUTH_TOKEN_KEY, "")
         val originalRequest = chain.request()
-        Log.d("HUIHUI", "token is - ${token}")
         val newRequest = originalRequest.newBuilder()
             .addHeader("Authorization", token ?: "")
             .build()

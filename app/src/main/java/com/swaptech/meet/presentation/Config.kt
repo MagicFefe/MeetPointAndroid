@@ -4,8 +4,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourcePolicy
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 
 //TODO: Change URLs!!!!
-const val BASE_URL = "http://192.168.0.4:8000/api/"
-const val MEET_POINTS_WS_URL = "ws://192.168.0.4:8000/api/meet/ws"
+const val BASE_URL = "https://meetbackend-production.up.railway.app/api/"
+const val MEET_POINTS_WS_URL = "wss://meetbackend-production.up.railway.app/api/meet/ws"
 const val SHARED_PREFS_FILE_NAME = "preferences"
 const val AUTH_TOKEN_KEY = "AUTH_TOKEN"
 const val USER_DB_NAME = "user_db"
