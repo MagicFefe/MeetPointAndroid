@@ -6,8 +6,9 @@ import com.swaptech.meet.domain.user.model.UserResponseWithToken
 import com.swaptech.meet.domain.user.model.UserUpdate
 import com.swaptech.meet.domain.user.repository.UserRepository
 import com.swaptech.meet.presentation.AUTH_TOKEN_KEY
-import com.swaptech.meet.presentation.utils.toUserDB
-import com.swaptech.meet.presentation.utils.toUserResponse
+import com.swaptech.meet.presentation.utils.network_error_handling.NetworkResponse
+import com.swaptech.meet.presentation.utils.mappers.toUserDB
+import com.swaptech.meet.presentation.utils.mappers.toUserResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -33,15 +34,15 @@ class UserRepositoryImpl @Inject constructor(
     override fun getLocalUser(): Flow<UserResponse?> =
         userDao.getUser().map { userDb -> userDb?.toUserResponse() }
 
-    override suspend fun getUserById(userId: String): UserResponse =
+    override suspend fun getUserById(userId: String): NetworkResponse<UserResponse> =
         userApi.getUserById(userId)
 
-    override suspend fun updateUser(user: UserUpdate): UserResponseWithToken =
+    override suspend fun updateUser(user: UserUpdate): NetworkResponse<UserResponseWithToken> =
         userApi.updateUser(user)
 
-    override suspend fun deleteUser(userId: String) {
+    override suspend fun deleteUser(userId: String): NetworkResponse<Unit> =
         userApi.deleteUserById(userId)
-    }
+
 
     override suspend fun saveUserToken(token: String) {
         encryptedSharedPreferences.edit()

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swaptech.meet.domain.user.interactor.UserInteractor
 import com.swaptech.meet.domain.user.model.UserResponseWithToken
-import com.swaptech.meet.presentation.utils.toUserResponse
+import com.swaptech.meet.presentation.utils.mappers.toUserResponse
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

@@ -34,6 +34,7 @@ import com.swaptech.meet.presentation.screen.auth.AuthUserViewModel
 import com.swaptech.meet.presentation.utils.UpdateSignUpUserForm
 import com.swaptech.meet.presentation.utils.Validator
 import com.swaptech.meet.presentation.utils.formatToDate
+import com.swaptech.meet.presentation.utils.network_error_handling.handleError
 import com.swaptech.meet.presentation.utils.replaceTo
 import com.swaptech.meet.presentation.utils.toBase64
 
@@ -232,12 +233,31 @@ fun SignUpScreen(
                         onSuccess = {
                             navController.replaceTo(Root.Home.route)
                         },
-                        onHttpError = { error ->
+                        onFail = { _, message ->
                             Toast.makeText(
                                 context,
-                                error.message,
+                                message,
                                 Toast.LENGTH_LONG
                             ).show()
+                        },
+                        onError = { error ->
+                            handleError(
+                                error,
+                                onConnectionFault = {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.no_internet_connection,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onSocketTimeout = {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.remote_services_unavailable,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            )
                         }
                     )
                 }

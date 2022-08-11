@@ -6,11 +6,14 @@ import com.swaptech.meet.domain.auth.SignIn
 import com.swaptech.meet.domain.auth.SignUp
 import com.swaptech.meet.domain.auth.interactor.AuthInteractor
 import com.swaptech.meet.domain.user.model.UserResponseWithToken
+import com.swaptech.meet.presentation.utils.network_error_handling.NetworkResponse
+import com.swaptech.meet.presentation.utils.network_error_handling.onError
+import com.swaptech.meet.presentation.utils.network_error_handling.onFail
+import com.swaptech.meet.presentation.utils.network_error_handling.onSuccess
 import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import javax.inject.Inject
 
 class AuthUserViewModel @Inject constructor(
@@ -19,21 +22,21 @@ class AuthUserViewModel @Inject constructor(
 ) : ViewModel() {
 
     private fun registerUser(
-        block: suspend CoroutineScope.() -> UserResponseWithToken,
+        block: suspend CoroutineScope.() -> NetworkResponse<UserResponseWithToken>,
         onSuccess: () -> Unit,
-        onHttpError: (HttpException) -> Unit = {}
+        onFail: (Int, String) -> Unit,
+        onError: (Throwable) -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val user = block()
-                localUserViewModel.saveLocalUser(user)
-                viewModelScope.launch(Dispatchers.Main) {
-                    onSuccess()
-                }
-            } catch (httpException: HttpException) {
-                viewModelScope.launch(Dispatchers.Main) {
-                    onHttpError(httpException)
-                }
+            val response = block()
+            viewModelScope.launch(Dispatchers.Main) {
+                response
+                    .onSuccess { user ->
+                        localUserViewModel.saveLocalUser(user)
+                        onSuccess()
+                    }
+                    .onFail(onFail)
+                    .onError(onError)
             }
         }
     }
@@ -41,28 +44,32 @@ class AuthUserViewModel @Inject constructor(
     fun signInUser(
         user: SignIn,
         onSuccess: () -> Unit,
-        onHttpError: (HttpException) -> Unit
+        onFail: (Int, String) -> Unit,
+        onError: (Throwable) -> Unit
     ) {
         registerUser(
             block = {
                 authInteractor.signInUser(user)
             },
             onSuccess = onSuccess,
-            onHttpError = onHttpError
+            onFail = onFail,
+            onError = onError
         )
     }
 
     fun signUpUser(
         signUp: SignUp,
         onSuccess: () -> Unit,
-        onHttpError: (HttpException) -> Unit
+        onFail: (Int, String) -> Unit,
+        onError: (Throwable) -> Unit
     ) {
         registerUser(
             block = {
                 authInteractor.signUpUser(signUp)
             },
             onSuccess = onSuccess,
-            onHttpError = onHttpError
+            onFail = onFail,
+            onError = onError
         )
     }
 }

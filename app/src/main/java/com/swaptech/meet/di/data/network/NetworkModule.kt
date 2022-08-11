@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.swaptech.meet.data.interceptor.AuthorizationInterceptor
 import com.swaptech.meet.presentation.BASE_URL
 import com.swaptech.meet.presentation.MEET_POINTS_WS_URL
+import com.swaptech.meet.presentation.utils.network_error_handling.NetworkResponseCallAdapterFactory
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.messageadapter.gson.GsonMessageAdapter
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
@@ -46,6 +47,7 @@ class NetworkModule {
             .client(okHttpClient)
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(gson))
+            .addCallAdapterFactory(NetworkResponseCallAdapterFactory())
             .build()
 
     @Provides

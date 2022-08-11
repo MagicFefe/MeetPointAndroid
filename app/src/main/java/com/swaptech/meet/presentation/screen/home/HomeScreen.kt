@@ -99,7 +99,7 @@ fun HomeScreen(
                 }
                 composable(Home.More.route) {
                     MoreScreen(
-                        localUserId = localUser.id,
+                        localUser = localUser,
                         remoteUserViewModel = viewModel(
                             modelClass = RemoteUserViewModel::class.java,
                             factory = viewModelFactory
@@ -116,11 +116,10 @@ fun HomeScreen(
                 ) {
                     val userId = bottomBarNavController
                         .currentBackStackEntry?.arguments?.getString("userId")
-                    val localUserId = localUser.id
                     userId?.let {
                         UserScreen(
                             clickedUserId = userId,
-                            localUserId = localUserId,
+                            localUser = localUser,
                             rootNavController = rootNavController,
                             bottomBarNavController = bottomBarNavController,
                             viewModelFactory = viewModelFactory

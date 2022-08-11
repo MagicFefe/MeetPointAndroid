@@ -5,13 +5,14 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.swaptech.meet.BuildConfig
 
 @Composable
 fun AboutScreen() {
     Column {
         Text(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            text = "Alpha version 1.0.0"
+            text = "Version: ${BuildConfig.VERSION_NAME}"
         )
         Text(
             modifier = Modifier.align(Alignment.CenterHorizontally),

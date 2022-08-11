@@ -7,6 +7,8 @@ import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,6 +33,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
@@ -248,6 +252,7 @@ fun MeetPointCreationUpdateCard(
     meetPointDescription: String,
     onMeetPointDescriptionChange: (String) -> Unit,
     onCloseButtonCLick: () -> Unit,
+    doneButton: (@Composable () -> Unit)? = null,
     onDoneButtonClick: () -> Unit
 ) {
     Surface(
@@ -271,14 +276,24 @@ fun MeetPointCreationUpdateCard(
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(
-                    modifier = Modifier.padding(end = 3.dp),
-                    onClick = onDoneButtonClick
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Done,
-                        contentDescription = null
-                    )
+                if (doneButton != null) {
+                    Column(
+                        modifier = Modifier.padding(end = 13.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        doneButton()
+                    }
+                } else {
+                    IconButton(
+                        modifier = Modifier.padding(end = 3.dp),
+                        onClick = onDoneButtonClick
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Done,
+                            contentDescription = null
+                        )
+                    }
                 }
             }
             OutlinedTextField(
@@ -321,14 +336,17 @@ fun MeetPointCreationMin_Preview() {
         description,
         onDescriptionChange,
         {},
-        {}
+        doneButton = { CardProgressIndicator() },
+        onDoneButtonClick = {}
     )
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MeetPointDetails(
     modifier: Modifier = Modifier,
-    meetPoint: MeetPointResponseDetails,
+    meetPoint: MeetPointResponseDetails?,
+    isLoading: Boolean,
     onCloseButtonCLick: () -> Unit,
     onAuthorClick: () -> Unit,
     actionButtons: (@Composable RowScope.() -> Unit)? = null
@@ -356,57 +374,73 @@ fun MeetPointDetails(
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                actionButtons?.let {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        content = actionButtons
-                    )
+                if (meetPoint != null || !isLoading) {
+                    actionButtons?.let {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            content = actionButtons
+                        )
+                    }
                 }
             }
-            Column {
-                Column(
-                    modifier = Modifier.padding(start = 17.dp, end = 17.dp)
-                ) {
-                    Text(
-                        text = stringResource(
-                            id = R.string.meet_point_name_with_params,
-                            meetPoint.meetName
-                        ),
-                        style = MaterialTheme.typography.subtitle1
-                    )
-                    Text(
-                        text = stringResource(
-                            id = R.string.meet_point_description_with_params,
-                            meetPoint.meetDescription
-                        ),
-                        style = MaterialTheme.typography.subtitle2
-                    )
-                    Text(
-                        modifier = Modifier.padding(bottom = 5.dp),
-                        text = stringResource(
-                            id = R.string.meet_point_created_at,
-                            meetPoint.createdAt
-                        ),
-                        style = MaterialTheme.typography.subtitle2
-                    )
-                }
-                Column(
-                    modifier = Modifier
-                        .clickable(
-                            onClick = onAuthorClick
-                        )
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val decodedProfileImage = meetPoint.authorImage.toByteArray()
-                    UserHeader(
+            AnimatedContent(targetState = meetPoint == null || isLoading) {
+                if (meetPoint == null || isLoading) {
+                    Column(
                         modifier = Modifier
-                            .padding(top = 10.dp)
-                            .size(20.dp),
-                        userName = meetPoint.authorName,
-                        userSurname = meetPoint.authorSurname,
-                        profileImage = decodedProfileImage
-                    )
+                            .height(150.dp)
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    Column {
+                        Column(
+                            modifier = Modifier.padding(start = 17.dp, end = 17.dp)
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    id = R.string.meet_point_name_with_params,
+                                    meetPoint.meetName
+                                ),
+                                style = MaterialTheme.typography.subtitle1
+                            )
+                            Text(
+                                text = stringResource(
+                                    id = R.string.meet_point_description_with_params,
+                                    meetPoint.meetDescription
+                                ),
+                                style = MaterialTheme.typography.subtitle2
+                            )
+                            Text(
+                                modifier = Modifier.padding(bottom = 5.dp),
+                                text = stringResource(
+                                    id = R.string.meet_point_created_at,
+                                    meetPoint.createdAt
+                                ),
+                                style = MaterialTheme.typography.subtitle2
+                            )
+                        }
+                        Column(
+                            modifier = Modifier
+                                .clickable(
+                                    onClick = onAuthorClick
+                                )
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            val decodedProfileImage = meetPoint.authorImage.toByteArray()
+                            UserHeader(
+                                modifier = Modifier
+                                    .padding(top = 10.dp)
+                                    .size(20.dp),
+                                userName = meetPoint.authorName,
+                                userSurname = meetPoint.authorSurname,
+                                profileImage = decodedProfileImage
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -435,6 +469,7 @@ fun MeetPointDetails_Preview() {
             authorSurname = "Ivanov",
             authorImage = ""
         ),
+        isLoading = true,
         onCloseButtonCLick = {},
         onAuthorClick = {}
     ) {
@@ -447,12 +482,31 @@ fun MeetPointDetails_Preview() {
     }
 }
 
+
+@Composable
+fun CardProgressIndicator(
+    modifier: Modifier = Modifier,
+) {
+    CircularProgressIndicator(
+        modifier = modifier.size(20.dp),
+        color = MaterialTheme.colors.onSurface,
+        strokeWidth = 2.dp
+    )
+}
+
 @Composable
 fun UserImage(
     modifier: Modifier,
     userImage: ByteArray?
 ) {
-    if (userImage != null) {
+    if (userImage == null || userImage.isEmpty()) {
+        Image(
+            modifier = modifier.clip(CircleShape),
+            painter = painterResource(R.drawable.user_image_placeholder),
+            contentDescription = null,
+            contentScale = ContentScale.Crop
+        )
+    } else {
         AsyncImage(
             modifier = modifier.clip(CircleShape),
             model = ImageRequest.Builder(LocalContext.current)
@@ -460,13 +514,6 @@ fun UserImage(
                 .placeholder(R.drawable.user_image_placeholder)
                 .build(),
             contentDescription = null
-        )
-    } else {
-        Image(
-            modifier = modifier.clip(CircleShape),
-            painter = painterResource(R.drawable.user_image_placeholder),
-            contentDescription = null,
-            contentScale = ContentScale.Crop
         )
     }
 }
@@ -791,4 +838,19 @@ fun Separator(
             .fillMaxWidth()
             .background(ColorCompose.LightGray)
     )
+}
+
+@Composable
+fun LoadingPlaceholder(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colors.surface)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator()
+    }
 }

@@ -7,15 +7,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.swaptech.meet.presentation.utils.network_error_handling.NetworkResponse
+import com.swaptech.meet.presentation.utils.network_error_handling.Success
 
 @Composable
-fun <F, P> FetchWithParam(
+fun <P, F: Any> FetchWithParam(
     param: P,
-    action: suspend (P) -> F,
-    onLoading: @Composable () -> Unit = {},
-    onCompletion: @Composable (F) -> Unit
+    action: suspend (P) -> NetworkResponse<F>,
+    onLoading: @Composable () -> Unit,
+    onCompletion: @Composable (F?) -> Unit
 ) {
-    var fetched: F? by remember(param) {
+    var fetched: NetworkResponse<F>? by remember(param) {
         mutableStateOf(null)
     }
     LaunchedEffect(param) {
@@ -26,7 +28,7 @@ fun <F, P> FetchWithParam(
             onLoading()
         }
         else -> {
-            onCompletion(fetched!!)
+            onCompletion((fetched!! as? Success)?.result)
         }
     }
 }
