@@ -1,5 +1,6 @@
 package com.swaptech.meet.presentation.screen.home.user_screen.details
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,17 +20,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.swaptech.meet.R
+import com.swaptech.meet.domain.user.model.UserResponse
 import com.swaptech.meet.presentation.navigation.destination.Auth
 import com.swaptech.meet.presentation.navigation.destination.User
 import com.swaptech.meet.presentation.utils.FetchWithParam
+import com.swaptech.meet.presentation.utils.LoadingPlaceholder
 import com.swaptech.meet.presentation.utils.Separator
 import com.swaptech.meet.presentation.utils.UserHeader
 import com.swaptech.meet.presentation.utils.VerticalScrollableContent
+import com.swaptech.meet.presentation.utils.network_error_handling.handleError
 import com.swaptech.meet.presentation.utils.replaceTo
 import com.swaptech.meet.presentation.utils.toByteArray
 import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
@@ -38,22 +43,50 @@ import com.swaptech.meet.presentation.viewmodel.RemoteUserViewModel
 @Composable
 fun UserDetailsScreen(
     userId: String,
-    localUserId: String,
+    localUser: UserResponse,
     remoteUserViewModel: RemoteUserViewModel,
     localUserViewModel: LocalUserViewModel,
     nestedNavController: NavHostController,
     bottomBarNavController: NavHostController,
     rootNavController: NavHostController
 ) {
+    val context = LocalContext.current
     FetchWithParam(
         param = userId,
         action = {
-            remoteUserViewModel.getUserById(it)
+            remoteUserViewModel.getUserById(
+                it,
+                onFail = { _, message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                },
+                onError = { error ->
+                    handleError(
+                        error,
+                        onConnectionFault = {
+                            Toast.makeText(
+                                context,
+                                R.string.no_internet_connection,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        onSocketTimeout = {
+                            Toast.makeText(
+                                context,
+                                R.string.remote_services_unavailable,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    )
+                }
+            )
+        },
+        onLoading = {
+            LoadingPlaceholder()
         }
     ) { userById ->
         val scrollState = rememberScrollState()
-        val userCanEdit by remember(localUserId, userById) {
-            mutableStateOf(localUserId == userById.id)
+        val userTheSame by remember(localUser.id, userById) {
+            mutableStateOf(localUser.id == userId)
         }
         VerticalScrollableContent(
             scrollState = scrollState,
@@ -69,55 +102,68 @@ fun UserDetailsScreen(
                         contentDescription = null
                     )
                 }
+                val user by remember {
+                    mutableStateOf(
+                        userById ?: kotlin.run {
+                            if(userTheSame) {
+                                localUser
+                            } else {
+                                null
+                            }
+                        }
+                    )
+                }
                 Column(
                     modifier = Modifier.align(Alignment.TopCenter),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    UserHeader(
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .size(100.dp),
-                        userName = userById.name,
-                        userSurname = userById.surname,
-                        profileImage = userById.image.toByteArray()
-                    )
-                    Separator()
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    ) {
-                        if (userById.about.isNotEmpty()) {
+                    user?.let {
+                        UserHeader(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .size(100.dp),
+                            userName = it.name,
+                            userSurname = it.surname,
+                            profileImage = it.image.toByteArray()
+                        )
+                        Separator()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                        ) {
+                            if (it.about.isNotEmpty()) {
+                                UserDetailItem(
+                                    profileDetailName = stringResource(id = R.string.about),
+                                    profileDetailContent = it.about
+                                )
+                            }
                             UserDetailItem(
-                                profileDetailName = stringResource(id = R.string.about),
-                                profileDetailContent = userById.about
+                                profileDetailName = stringResource(id = R.string.gender),
+                                profileDetailContent = it.gender
+                            )
+                            UserDetailItem(
+                                profileDetailName = stringResource(id = R.string.date_of_birth),
+                                profileDetailContent = it.dob
+                            )
+                            UserDetailItem(
+                                profileDetailName = stringResource(id = R.string.email),
+                                profileDetailContent = it.email
+                            )
+                            UserDetailItem(
+                                profileDetailName = stringResource(id = R.string.country),
+                                profileDetailContent = it.country
+                            )
+                            UserDetailItem(
+                                profileDetailName = stringResource(id = R.string.city),
+                                profileDetailContent = it.city
                             )
                         }
-                        UserDetailItem(
-                            profileDetailName = stringResource(id = R.string.gender),
-                            profileDetailContent = userById.gender
-                        )
-                        UserDetailItem(
-                            profileDetailName = stringResource(id = R.string.date_of_birth),
-                            profileDetailContent = userById.dob
-                        )
-                        UserDetailItem(
-                            profileDetailName = stringResource(id = R.string.email),
-                            profileDetailContent = userById.email
-                        )
-                        UserDetailItem(
-                            profileDetailName = stringResource(id = R.string.country),
-                            profileDetailContent = userById.country
-                        )
-                        UserDetailItem(
-                            profileDetailName = stringResource(id = R.string.city),
-                            profileDetailContent = userById.city
-                        )
                     }
                 }
             },
             stickyBottomContent = {
-                if (userCanEdit) {
+                if (userTheSame) {
                     Column {
                         Button(
                             modifier = Modifier
@@ -127,7 +173,8 @@ fun UserDetailsScreen(
                                 nestedNavController.navigate(User.Update.route) {
                                     launchSingleTop = true
                                 }
-                            }
+                            },
+                            enabled = userById != null
                         ) {
                             Text(text = stringResource(R.string.update_user))
                         }
@@ -141,7 +188,7 @@ fun UserDetailsScreen(
                                     top = 2.dp
                                 ),
                             onClick = {
-                                localUserViewModel.deleteLocalUserById(localUserId)
+                                localUserViewModel.deleteLocalUserById(localUser.id)
                                 rootNavController.replaceTo(Auth.route)
                             },
                             colors = ButtonDefaults.buttonColors(

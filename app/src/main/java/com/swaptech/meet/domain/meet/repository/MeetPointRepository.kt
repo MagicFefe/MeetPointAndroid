@@ -5,13 +5,14 @@ import com.swaptech.meet.domain.meet.model.DeleteMeetPoint
 import com.swaptech.meet.domain.meet.model.MeetPointResponse
 import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
 import com.swaptech.meet.domain.meet.model.UpdateMeetPoint
+import com.swaptech.meet.presentation.utils.network_error_handling.NetworkResponse
 import kotlinx.coroutines.flow.Flow
 
 interface MeetPointRepository {
     fun subscribe()
     fun receiveMeetPoints(): Flow<List<MeetPointResponse>>
-    suspend fun getMeetPointById(meetPointId: String): MeetPointResponseDetails
-    suspend fun createMeetPoint(createMeetPoint: CreateMeetPoint)
-    suspend fun updateMeetPoint(updateMeetPoint: UpdateMeetPoint)
-    suspend fun deleteMeetPoint(deleteMeetPoint: DeleteMeetPoint)
+    suspend fun getMeetPointById(meetPointId: String): NetworkResponse<MeetPointResponseDetails>
+    suspend fun createMeetPoint(createMeetPoint: CreateMeetPoint): NetworkResponse<Unit>
+    suspend fun updateMeetPoint(updateMeetPoint: UpdateMeetPoint): NetworkResponse<Unit>
+    suspend fun deleteMeetPoint(deleteMeetPoint: DeleteMeetPoint): NetworkResponse<Unit>
 }

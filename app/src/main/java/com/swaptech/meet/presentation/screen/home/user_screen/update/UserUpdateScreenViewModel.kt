@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.swaptech.meet.domain.user.interactor.UserInteractor
 import com.swaptech.meet.domain.user.model.UserResponseWithToken
 import com.swaptech.meet.domain.user.model.UserUpdate
+import com.swaptech.meet.presentation.utils.network_error_handling.onError
+import com.swaptech.meet.presentation.utils.network_error_handling.onFail
+import com.swaptech.meet.presentation.utils.network_error_handling.onSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import javax.inject.Inject
 
 class UserUpdateScreenViewModel @Inject constructor(
@@ -17,18 +19,15 @@ class UserUpdateScreenViewModel @Inject constructor(
     fun updateUser(
         user: UserUpdate,
         onSuccess: (UserResponseWithToken) -> Unit,
-        onHttpError: (HttpException) -> Unit
+        onFail: (Int, String) -> Unit,
+        onError: (Throwable) -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val newUser = userInteractor.updateUser(user)
-                viewModelScope.launch(Dispatchers.Main) {
-                    onSuccess(newUser)
-                }
-            } catch (httpException: HttpException) {
-                viewModelScope.launch(Dispatchers.Main) {
-                    onHttpError(httpException)
-                }
+            val newUser = userInteractor.updateUser(user)
+            viewModelScope.launch(Dispatchers.Main) {
+                newUser.onSuccess(onSuccess)
+                    .onFail(onFail)
+                    .onError(onError)
             }
         }
     }

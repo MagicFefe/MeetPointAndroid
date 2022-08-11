@@ -22,6 +22,7 @@ import com.swaptech.meet.R
 import com.swaptech.meet.domain.feedback.model.Feedback
 import com.swaptech.meet.presentation.MAX_FEEDBACK_MESSAGE_LENGTH
 import com.swaptech.meet.presentation.utils.VerticalScrollableContent
+import com.swaptech.meet.presentation.utils.network_error_handling.handleError
 
 @Composable
 fun FeedbackScreen(
@@ -62,13 +63,39 @@ fun FeedbackScreen(
                                 userId = userId,
                                 message = message
                             )
-                            feedbackScreenViewModel.sendFeedback(feedback)
-                            Toast.makeText(
-                                context,
-                                R.string.thanks_for_feedback,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            nestedNavController.popBackStack()
+                            feedbackScreenViewModel.sendFeedback(
+                                feedback,
+                                onSuccess = {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.thanks_for_feedback,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    nestedNavController.popBackStack()
+                                },
+                                onFail = { _, message ->
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { error ->
+                                    handleError(
+                                        error,
+                                        onConnectionFault = {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.no_internet_connection,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        onSocketTimeout = {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.remote_services_unavailable,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
+                                }
+                            )
                         }
                     }
                 }

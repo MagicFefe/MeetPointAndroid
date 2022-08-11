@@ -6,6 +6,7 @@ import com.swaptech.meet.domain.meet.model.MeetPointResponse
 import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
 import com.swaptech.meet.domain.meet.model.UpdateMeetPoint
 import com.swaptech.meet.domain.meet.repository.MeetPointRepository
+import com.swaptech.meet.presentation.utils.network_error_handling.NetworkResponse
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -16,18 +17,16 @@ class MeetPointInteractor @Inject constructor(private val repository: MeetPointR
     fun receiveMeetPoints(): Flow<List<MeetPointResponse>> =
         repository.receiveMeetPoints()
 
-    suspend fun createMeetPoint(createMeetPoint: CreateMeetPoint) {
+    suspend fun createMeetPoint(createMeetPoint: CreateMeetPoint): NetworkResponse<Unit> =
         repository.createMeetPoint(createMeetPoint)
-    }
 
-    suspend fun getMeetPointById(meetPointId: String): MeetPointResponseDetails =
+
+    suspend fun getMeetPointById(meetPointId: String): NetworkResponse<MeetPointResponseDetails> =
         repository.getMeetPointById(meetPointId)
 
-    suspend fun updateMeetPoint(updateMeetPoint: UpdateMeetPoint) {
+    suspend fun updateMeetPoint(updateMeetPoint: UpdateMeetPoint): NetworkResponse<Unit> =
         repository.updateMeetPoint(updateMeetPoint)
-    }
 
-    suspend fun deleteMeetPoint(deleteMeetPoint: DeleteMeetPoint) {
+    suspend fun deleteMeetPoint(deleteMeetPoint: DeleteMeetPoint): NetworkResponse<Unit> =
         repository.deleteMeetPoint(deleteMeetPoint)
-    }
 }

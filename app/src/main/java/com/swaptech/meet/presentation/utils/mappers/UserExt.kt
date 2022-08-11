@@ -1,4 +1,4 @@
-package com.swaptech.meet.presentation.utils
+package com.swaptech.meet.presentation.utils.mappers
 
 import com.swaptech.meet.data.user.UserDB
 import com.swaptech.meet.domain.user.model.UserResponse

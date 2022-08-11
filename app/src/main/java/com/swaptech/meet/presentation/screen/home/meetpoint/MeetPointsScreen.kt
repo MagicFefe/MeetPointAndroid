@@ -7,6 +7,7 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
@@ -23,7 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -36,9 +39,11 @@ import com.swaptech.meet.presentation.CITY_LEVEL_ZOOM
 import com.swaptech.meet.presentation.MAX_MEET_POINT_DESCRIPTION_LENGTH
 import com.swaptech.meet.presentation.MAX_MEET_POINT_NAME_LENGTH
 import com.swaptech.meet.presentation.navigation.destination.Root
+import com.swaptech.meet.presentation.utils.CardProgressIndicator
 import com.swaptech.meet.presentation.utils.MeetPointCreationUpdateCard
 import com.swaptech.meet.presentation.utils.MeetPointDetails
 import com.swaptech.meet.presentation.utils.MeetPointMap
+import com.swaptech.meet.presentation.utils.network_error_handling.handleError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
@@ -66,6 +71,7 @@ fun MeetPointsScreen(
             val screenState = viewModel.screenState
             val clickedMeetPoint = viewModel.clickedMeetPoint
             val context = LocalContext.current
+            val focusManager = LocalFocusManager.current
             MeetPointMap(
                 centerLatitude = viewModel.savedMapPosition.latitude,
                 centerLongitude = viewModel.savedMapPosition.longitude,
@@ -149,6 +155,11 @@ fun MeetPointsScreen(
                         )
                         viewModel.removeMeetPointMarker()
                     },
+                    doneButton = if (viewModel.meetPointCreatingInProgress) {
+                        { CardProgressIndicator() }
+                    } else {
+                        null
+                    },
                     onDoneButtonClick = {
                         val dataIsValid = meetPointDataIsValid(
                             meetPointName = meetPointName,
@@ -176,19 +187,41 @@ fun MeetPointsScreen(
                             )
                             viewModel.createMeetPoint(
                                 createMeetPoint = newMeetPoint,
-                                onHttpError = { error ->
-                                    if (error.code() == 409) {
-                                        Toast.makeText(
-                                            context,
-                                            R.string.meet_point_already_exists,
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                onFail = { code, message ->
+                                    val toastMessage = if (code == 409) {
+                                        context.getString(R.string.meet_point_already_exists)
+                                    } else {
+                                        message
                                     }
+                                    Toast.makeText(
+                                        context,
+                                        toastMessage,
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                },
+                                onError = { error ->
+                                    handleError(
+                                        error,
+                                        onConnectionFault = {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.no_internet_connection,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        onSocketTimeout = {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.remote_services_unavailable,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
                                 }
                             )
                         }
+                        focusManager.clearFocus()
                         state.map.overlays.remove(viewModel.meetPointMarker)
-                        viewModel.removeMeetPointMarker()
                     }
                 )
             }
@@ -196,30 +229,60 @@ fun MeetPointsScreen(
                 visible = screenState is MeetPointScreenState.ShowMeetPointDetails,
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                if (screenState is MeetPointScreenState.ShowMeetPointDetails) {
-                    viewModel.getMeetPointById(screenState.meetPointId)
-                }
-                clickedMeetPoint?.let {
-                    val onAuthorClick = {
-                        nestedNavController.navigate(
-                            Root.UserScreen.getNavigationRoute(
-                                clickedMeetPoint.authorId
-                            )
-                        ) {
-                            launchSingleTop = true
-                        }
-                    }
-                    if (localUser.id == clickedMeetPoint.authorId) {
-                        MeetPointDetails(
-                            meetPoint = clickedMeetPoint,
-                            onCloseButtonCLick = {
-                                viewModel.hideMeetPointDetails()
+                LaunchedEffect(screenState is MeetPointScreenState.ShowMeetPointDetails) {
+                    if (screenState is MeetPointScreenState.ShowMeetPointDetails) {
+                        viewModel.getMeetPointById(
+                            screenState.meetPointId,
+                            onFail = { _, message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                viewModel.hideMeetPointCard()
                             },
-                            onAuthorClick = onAuthorClick
-                        ) {
+                            onError = { error ->
+                                handleError(
+                                    error,
+                                    onConnectionFault = {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.no_internet_connection,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                    onSocketTimeout = {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.remote_services_unavailable,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                )
+                                viewModel.hideMeetPointCard()
+                            }
+                        )
+                    }
+                }
+                MeetPointDetails(
+                    meetPoint = clickedMeetPoint,
+                    isLoading = viewModel.meetPointByIdReceivingInProgress,
+                    onCloseButtonCLick = {
+                        viewModel.hideMeetPointCard()
+                    },
+                    onAuthorClick = {
+                        clickedMeetPoint?.let {
+                            nestedNavController.navigate(
+                                Root.UserScreen.getNavigationRoute(
+                                    clickedMeetPoint.authorId
+                                )
+                            ) {
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    actionButtons = if (
+                        localUser.id == (clickedMeetPoint?.authorId ?: false)
+                    ) {
+                        {
                             IconButton(
                                 onClick = {
-                                    viewModel.hideMeetPointDetails()
                                     viewModel.showUpdateMeetPointCard()
                                 }
                             ) {
@@ -228,32 +291,64 @@ fun MeetPointsScreen(
                                     contentDescription = null
                                 )
                             }
-                            IconButton(
-                                onClick = {
-                                    val deleteMeetPoint = DeleteMeetPoint(
-                                        id = clickedMeetPoint.id,
-                                        authorId = clickedMeetPoint.authorId
-                                    )
-                                    viewModel.deleteMeetPoint(deleteMeetPoint)
-                                    viewModel.hideMeetPointDetails()
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Delete,
-                                    contentDescription = null
+                            if (viewModel.meetPointByIdDeletingInProgress) {
+                                CardProgressIndicator(
+                                    modifier = Modifier.padding(end = 13.dp)
                                 )
+                            } else {
+                                IconButton(
+                                    onClick = {
+                                        clickedMeetPoint?.let {
+                                            val deleteMeetPoint = DeleteMeetPoint(
+                                                id = clickedMeetPoint.id,
+                                                authorId = clickedMeetPoint.authorId
+                                            )
+                                            viewModel.deleteMeetPoint(
+                                                deleteMeetPoint,
+                                                onSuccess = {
+                                                    viewModel.hideMeetPointCard()
+                                                },
+                                                onFail = { _, message ->
+                                                    Toast.makeText(
+                                                        context,
+                                                        message,
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                },
+                                                onError = { error ->
+                                                    handleError(
+                                                        error,
+                                                        onConnectionFault = {
+                                                            Toast.makeText(
+                                                                context,
+                                                                R.string.no_internet_connection,
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        },
+                                                        onSocketTimeout = {
+                                                            Toast.makeText(
+                                                                context,
+                                                                R.string.remote_services_unavailable,
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        }
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Delete,
+                                        contentDescription = null
+                                    )
+                                }
                             }
                         }
                     } else {
-                        MeetPointDetails(
-                            meetPoint = clickedMeetPoint,
-                            onCloseButtonCLick = {
-                                viewModel.hideMeetPointDetails()
-                            },
-                            onAuthorClick = onAuthorClick
-                        )
+                        null
                     }
-                }
+                )
             }
             AnimatedMeetPointCard(
                 visible = screenState is MeetPointScreenState.UpdateMeetPoint,
@@ -275,6 +370,11 @@ fun MeetPointsScreen(
                         onCloseButtonCLick = {
                             viewModel.showMeetPointDetails(clickedMeetPoint.id)
                         },
+                        doneButton = if (viewModel.meetPointUpdatingInProgress) {
+                            { CardProgressIndicator() }
+                        } else {
+                            null
+                        },
                         onDoneButtonClick = {
                             val dataIsValid = meetPointDataIsValid(
                                 meetPointName = meetPointName,
@@ -295,8 +395,35 @@ fun MeetPointsScreen(
                                 meetName = meetPointName,
                                 meetDescription = meetPointDescription
                             )
-                            viewModel.updateMeetPoint(updateMeetPoint)
-                            viewModel.showMeetPointDetails(clickedMeetPoint.id)
+                            viewModel.updateMeetPoint(
+                                updateMeetPoint,
+                                onSuccess = {
+                                    viewModel.showMeetPointDetails(clickedMeetPoint.id)
+                                },
+                                onFail = { _, message ->
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { error ->
+                                    handleError(
+                                        error,
+                                        onConnectionFault = {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.no_internet_connection,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        onSocketTimeout = {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.remote_services_unavailable,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
+                                }
+                            )
+                            focusManager.clearFocus()
                         }
                     )
                 }
