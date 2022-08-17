@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.swaptech.meet.presentation.screen.auth.AuthUserViewModel
 import com.swaptech.meet.presentation.screen.home.meetpoint.MeetPointScreenViewModel
 import com.swaptech.meet.presentation.screen.home.more.feedback.FeedbackScreenViewModel
+import com.swaptech.meet.presentation.screen.home.user_screen.details.UserDetailsScreenViewModel
 import com.swaptech.meet.presentation.screen.home.user_screen.update.UserUpdateScreenViewModel
 import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
 import com.swaptech.meet.presentation.viewmodel.RemoteUserViewModel
@@ -43,4 +44,9 @@ interface ViewModelModule {
     @IntoMap
     @CreateWithViewModelFactory(FeedbackScreenViewModel::class)
     fun bindFeedbackScreenViewModel(viewModel: FeedbackScreenViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @CreateWithViewModelFactory(UserDetailsScreenViewModel::class)
+    fun bindUserDetailsScreenViewModel(viewModel: UserDetailsScreenViewModel): ViewModel
 }

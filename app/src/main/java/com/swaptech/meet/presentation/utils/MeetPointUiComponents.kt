@@ -1,6 +1,5 @@
 package com.swaptech.meet.presentation.utils
 
-import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -52,8 +51,6 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,7 +63,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -77,172 +73,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.BlendModeColorFilterCompat
-import androidx.core.graphics.BlendModeCompat
-import androidx.lifecycle.Lifecycle.Event
-import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.swaptech.meet.R
-import com.swaptech.meet.domain.meet.model.MeetPointResponse
 import com.swaptech.meet.domain.meet.model.MeetPointResponseDetails
-import com.swaptech.meet.presentation.MAPNIK_512
-import com.swaptech.meet.presentation.WORLD_LEVEL_ZOOM
 import com.swaptech.meet.presentation.utils.country_chooser.CountryChooser
 import com.swaptech.meet.presentation.utils.country_chooser.CountryChooserState
 import com.swaptech.meet.presentation.utils.country_chooser.rememberCountryChooserState
-import org.osmdroid.events.MapEventsReceiver
-import org.osmdroid.util.BoundingBox
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.util.TileSystemWebMercator
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.MapEventsOverlay
-import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.ScaleBarOverlay
-import org.osmdroid.views.overlay.compass.CompassOverlay
-import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
-import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import androidx.compose.ui.graphics.Color as ColorCompose
-
-@Composable
-fun MeetPointMap(
-    centerLatitude: Double = 0.0,
-    centerLongitude: Double = 0.0,
-    zoomLevel: Double = WORLD_LEVEL_ZOOM,
-    newMeetPoints: List<MeetPointResponse>,
-    oldMeetPoints: List<MeetPointResponse>,
-    onFirstLocationFix: (MyLocationNewOverlay, MapView) -> Unit,
-    onMapSingleTap: (GeoPoint?, MapView) -> Boolean,
-    onMarkerClickListener: (Marker, MapView) -> Boolean,
-    onDisposeMap: (MapView) -> Unit
-) {
-    val owner = LocalLifecycleOwner.current
-    val localContext = LocalContext.current
-    val map = MapView(localContext)
-    LaunchedEffect(key1 = Unit) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Event.ON_RESUME -> {
-                    map.onResume()
-                }
-                Event.ON_PAUSE -> {
-                    map.onPause()
-                }
-                else -> {}
-            }
-        }
-        owner.lifecycle.addObserver(observer)
-    }
-    AndroidView(
-        factory = { context ->
-            val mapEventsReceiver = object : MapEventsReceiver {
-                override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean =
-                    onMapSingleTap(p, map)
-
-                override fun longPressHelper(p: GeoPoint?): Boolean = false
-            }
-            val mapEventsOverlay = MapEventsOverlay(mapEventsReceiver)
-            val compassOverlay =
-                CompassOverlay(context, InternalCompassOrientationProvider(context), map)
-            val rotationGestureOverlay = RotationGestureOverlay(map)
-            val scaleBarOverlay = ScaleBarOverlay(map)
-            val locationOverlay =
-                MyLocationNewOverlay(GpsMyLocationProvider(localContext), map).apply {
-                    onFirstLocationFix(this, map)
-                }
-
-            return@AndroidView map.apply {
-                setTileSource(MAPNIK_512)
-
-                controller.setCenter(
-                    GeoPoint(
-                        centerLatitude,
-                        centerLongitude
-                    )
-                )
-                zoomController.onDetach()
-
-                isHorizontalMapRepetitionEnabled = false
-                isVerticalMapRepetitionEnabled = false
-                setScrollableAreaLimitLatitude(
-                    MapView.getTileSystem().maxLatitude,
-                    MapView.getTileSystem().minLatitude,
-                    0
-                )
-                setScrollableAreaLimitDouble(
-                    BoundingBox(
-                        TileSystemWebMercator.MaxLatitude,
-                        TileSystemWebMercator.MaxLongitude,
-                        TileSystemWebMercator.MinLatitude,
-                        TileSystemWebMercator.MinLongitude
-                    )
-                )
-
-                overlays.add(mapEventsOverlay)
-                overlays.add(scaleBarOverlay)
-
-                setMultiTouchControls(true)
-                if (rotationGestureOverlay.isEnabled) {
-                    overlays.add(rotationGestureOverlay)
-                }
-
-                if (compassOverlay.enableCompass()) {
-                    overlays.add(compassOverlay)
-                }
-
-                controller.setZoom(zoomLevel)
-
-                overlays.add(locationOverlay)
-                locationOverlay.enableMyLocation()
-            }
-        },
-        update = {
-            it.overlays.removeAll { overlay ->
-                (overlay as? Marker)?.position?.let { geoPoint ->
-                    oldMeetPoints.map { oldMeetPoint ->
-                        GeoPoint(
-                            oldMeetPoint.latitude,
-                            oldMeetPoint.longitude
-                        )
-                    }.contains(geoPoint)
-                } ?: false
-            }
-            newMeetPoints.forEach { meetPointResponse ->
-                val meet =
-                    Marker(it).apply {
-                        setOnMarkerClickListener(onMarkerClickListener)
-                        title = meetPointResponse.id
-                        icon =
-                            ContextCompat.getDrawable(
-                                localContext,
-                                R.drawable.ic_baseline_circle_24
-                            )
-                                ?.apply {
-                                    colorFilter =
-                                        BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-                                            Color.BLUE, BlendModeCompat.SRC_ATOP
-                                        )
-                                }
-                        position = GeoPoint(
-                            meetPointResponse.latitude,
-                            meetPointResponse.longitude
-                        )
-                    }
-
-                it.overlays.add(meet)
-            }
-        }
-    )
-    DisposableEffect(Unit) {
-        onDispose {
-            onDisposeMap(map)
-        }
-    }
-}
 
 @Composable
 fun MeetPointCreationUpdateCard(
@@ -486,10 +324,11 @@ fun MeetPointDetails_Preview() {
 @Composable
 fun CardProgressIndicator(
     modifier: Modifier = Modifier,
+    color: androidx.compose.ui.graphics.Color = MaterialTheme.colors.onSurface
 ) {
     CircularProgressIndicator(
         modifier = modifier.size(20.dp),
-        color = MaterialTheme.colors.onSurface,
+        color = color,
         strokeWidth = 2.dp
     )
 }

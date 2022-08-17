@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.swaptech.meet.domain.map.MapPosition
+import com.swaptech.meet.domain.map.MapPositionInteractor
 import com.swaptech.meet.domain.meet.interactor.MeetPointInteractor
 import com.swaptech.meet.domain.meet.model.CreateMeetPoint
 import com.swaptech.meet.domain.meet.model.DeleteMeetPoint
@@ -17,6 +19,7 @@ import com.swaptech.meet.presentation.utils.network_error_handling.onFail
 import com.swaptech.meet.presentation.utils.network_error_handling.onSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
@@ -27,22 +30,29 @@ import org.osmdroid.views.overlay.Marker
 import javax.inject.Inject
 
 class MeetPointScreenViewModel @Inject constructor(
-    private val meetPointInteractor: MeetPointInteractor
+    private val meetPointInteractor: MeetPointInteractor,
+    private val mapPositionInteractor: MapPositionInteractor
 ) : ViewModel() {
 
-    var firstLocationFixHappened by mutableStateOf(false)
-        private set
     var meetPointMarker: Marker? by mutableStateOf(null)
         private set
     var screenState: MeetPointScreenState by mutableStateOf(MeetPointScreenState.Idle)
         private set
-    var savedMapPosition: IGeoPoint by mutableStateOf(GeoPoint(0.0, 0.0))
+    var savedMapCenter: IGeoPoint by mutableStateOf(GeoPoint(0.0, 0.0))
         private set
     var savedMapZoomLevel: Double by mutableStateOf(WORLD_LEVEL_ZOOM)
         private set
+    var savedMapCenterOffsetX: Int by mutableStateOf(0)
+        private set
+    var savedMapCenterOffsetY: Int by mutableStateOf(0)
+        private set
+    val mapPositionDB = flow {
+        emit(mapPositionInteractor.getMapCenter())
+    }
+
     var clickedMeetPoint: MeetPointResponseDetails? by mutableStateOf(null)
         private set
-
+            
     var meetPointCreatingInProgress by mutableStateOf(false)
         private set
     var meetPointByIdReceivingInProgress by mutableStateOf(false)
@@ -61,9 +71,6 @@ class MeetPointScreenViewModel @Inject constructor(
         .bufferPrevious()
         .shareIn(viewModelScope, SharingStarted.Eagerly, 1)
 
-    fun onFirstFixLocation() {
-        firstLocationFixHappened = true
-    }
 
     fun addMeetPointMarker(marker: Marker, map: MapView) {
         meetPointMarker = marker
@@ -88,11 +95,20 @@ class MeetPointScreenViewModel @Inject constructor(
     }
 
     fun saveMapPosition(point: IGeoPoint) {
-        savedMapPosition = point
+        savedMapCenter = point
     }
 
     fun saveMapZoomLevel(zoomLevel: Double) {
         savedMapZoomLevel = zoomLevel
+    }
+
+    fun saveCenterOffset(x: Int, y: Int) {
+        savedMapCenterOffsetX = x
+        savedMapCenterOffsetY = y
+    }
+
+    fun saveCurrentLocation(latitude: Double, longitude: Double) {
+        savedMapCenter = GeoPoint(latitude, longitude)
     }
 
     fun createMeetPoint(
@@ -168,6 +184,20 @@ class MeetPointScreenViewModel @Inject constructor(
                     .onError(onError)
                 meetPointByIdDeletingInProgress = false
             }
+        }
+    }
+
+    fun updateMapPositionDB() {
+        viewModelScope.launch(Dispatchers.IO) {
+            mapPositionInteractor.save(
+                MapPosition(
+                    latitude = savedMapCenter.latitude,
+                    longitude = savedMapCenter.longitude,
+                    mapCenterOffsetX = savedMapCenterOffsetX,
+                    mapCenterOffsetY = savedMapCenterOffsetY,
+                    zoomLevel = savedMapZoomLevel
+                )
+            )
         }
     }
 }

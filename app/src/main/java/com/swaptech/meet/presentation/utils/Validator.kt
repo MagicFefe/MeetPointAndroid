@@ -6,7 +6,10 @@ import com.swaptech.meet.presentation.MAX_CITY_NAME_LENGTH
 import com.swaptech.meet.presentation.MAX_EMAIL_LENGTH
 import com.swaptech.meet.presentation.MAX_NAME_SURNAME_LENGTH
 import com.swaptech.meet.presentation.MAX_PASSWORD_LENGTH
+import com.swaptech.meet.presentation.MAX_YEARS_COUNT
 import com.swaptech.meet.presentation.MIN_PASSWORD_LENGTH
+import com.swaptech.meet.presentation.MIN_YEARS_COUNT
+import java.util.*
 
 object Validator {
 
@@ -28,13 +31,13 @@ object Validator {
 
     //ddmmyyyy where d - day in month, m - month in year, y - year
     fun dateIsNotValid(date: String): Boolean {
-        val (day, month, year) = date.split("-")
-        val februaryDaysCount = if (year.toInt() % 4 == 0) {
+        val (day, month, year) = date.split("-").map { item -> item.toInt() }
+        val februaryDaysCount = if (year % 4 == 0) {
             29
         } else {
             28
         }
-        val monthDaysCount = when (month.toInt()) {
+        val monthDaysCount = when (month) {
             2 -> {
                 februaryDaysCount
             }
@@ -45,6 +48,34 @@ object Validator {
                 31
             }
         }
-        return day.toInt() > monthDaysCount || month.toInt() > 12
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        return day > monthDaysCount || month > 12 || year > currentYear
+    }
+
+    fun ageIsNotValid(
+        dateStr: String,
+        onAgeIsTooSmall: () -> Unit,
+        onAgeIsTooBig: () -> Unit
+    ): Boolean {
+        val (day, month, year) = dateStr.split("-").map { item -> item.toInt() }
+        val currYear = Calendar.getInstance().get(Calendar.YEAR)
+        val currMonth = Calendar.getInstance().get(Calendar.MONTH)
+        val currDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+        return when(currYear - year) {
+            MIN_YEARS_COUNT -> {
+                val birthdayHasNotYetOccurred = currDay < day || currMonth < month
+                if(birthdayHasNotYetOccurred) {
+                    onAgeIsTooSmall()
+                }
+                birthdayHasNotYetOccurred
+            }
+            in (MIN_YEARS_COUNT+1..MAX_YEARS_COUNT) -> {
+                false
+            }
+            else -> {
+                onAgeIsTooBig()
+                true
+            }
+        }
     }
 }

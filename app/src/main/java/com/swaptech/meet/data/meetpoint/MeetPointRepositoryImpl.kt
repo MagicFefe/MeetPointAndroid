@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 class MeetPointRepositoryImpl @Inject constructor(
     private val meetPointService: MeetPointService,
-    private val meetPointApi: MeetPointApi,
+    private val meetPointApi: MeetPointApi
 ) : MeetPointRepository {
 
     override fun subscribe() {

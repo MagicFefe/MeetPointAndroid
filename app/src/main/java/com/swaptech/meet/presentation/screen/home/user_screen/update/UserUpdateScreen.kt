@@ -24,9 +24,10 @@ import com.swaptech.meet.R
 import com.swaptech.meet.domain.user.model.UserUpdate
 import com.swaptech.meet.presentation.MAX_ABOUT_FIELD_LENGTH
 import com.swaptech.meet.presentation.MAX_CITY_NAME_LENGTH
-import com.swaptech.meet.presentation.MAX_DOB_LENGTH
+import com.swaptech.meet.presentation.DOB_LENGTH
 import com.swaptech.meet.presentation.MAX_EMAIL_LENGTH
 import com.swaptech.meet.presentation.MAX_NAME_SURNAME_LENGTH
+import com.swaptech.meet.presentation.MIN_YEARS_COUNT
 import com.swaptech.meet.presentation.navigation.destination.User
 import com.swaptech.meet.presentation.utils.FetchWithParam
 import com.swaptech.meet.presentation.utils.LoadingPlaceholder
@@ -160,7 +161,7 @@ fun UserUpdateScreen(
                 },
                 date = date,
                 onDateChange = { input ->
-                    if (input.length <= MAX_DOB_LENGTH) {
+                    if (input.length <= DOB_LENGTH) {
                         date = input
                     }
                 },
@@ -217,14 +218,37 @@ fun UserUpdateScreen(
                                 ).show()
                                 return@Button
                             }
-                            if (date.length == MAX_DOB_LENGTH) {
+                            if (date.length == DOB_LENGTH) {
                                 if (Validator.dateIsNotValid(date.formatToDate())) {
                                     Toast.makeText(
                                         context,
                                         R.string.enter_correct_date,
                                         Toast.LENGTH_SHORT
-                                    )
-                                        .show()
+                                    ).show()
+                                    return@Button
+                                }
+                                val ageInvalid = Validator.ageIsNotValid(
+                                    date.formatToDate(),
+                                    onAgeIsTooSmall = {
+                                        val message = context.getString(
+                                            R.string.age_is_too_small_message,
+                                            MIN_YEARS_COUNT.toString()
+                                        )
+                                        Toast.makeText(
+                                            context,
+                                            message,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                    onAgeIsTooBig = {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.you_are_too_old,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                )
+                                if (ageInvalid) {
                                     return@Button
                                 }
                             } else {

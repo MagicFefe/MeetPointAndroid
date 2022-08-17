@@ -10,6 +10,7 @@ import com.swaptech.meet.di.presentation.viewmodel.ViewModelFactory
 import com.swaptech.meet.domain.user.model.UserResponse
 import com.swaptech.meet.presentation.navigation.destination.User
 import com.swaptech.meet.presentation.screen.home.user_screen.details.UserDetailsScreen
+import com.swaptech.meet.presentation.screen.home.user_screen.details.UserDetailsScreenViewModel
 import com.swaptech.meet.presentation.screen.home.user_screen.update.UserUpdateScreen
 import com.swaptech.meet.presentation.screen.home.user_screen.update.UserUpdateScreenViewModel
 import com.swaptech.meet.presentation.viewmodel.LocalUserViewModel
@@ -41,6 +42,10 @@ fun UserScreen(
                 ),
                 localUserViewModel = viewModel(
                     modelClass = LocalUserViewModel::class.java,
+                    factory = viewModelFactory
+                ),
+                userDetailsScreenViewModel = viewModel(
+                    modelClass = UserDetailsScreenViewModel::class.java,
                     factory = viewModelFactory
                 ),
                 nestedNavController = navController,

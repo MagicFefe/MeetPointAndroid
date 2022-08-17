@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Meet</string>
+    <string name="app_name">MeetPoint</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="all_fields_must_be_filled">All fields must be filled</string>
@@ -67,4 +67,11 @@
     <string name="about_app">About</string>
     <string name="remote_services_unavailable">Remote services unavailable</string>
     <string name="no_internet_connection">No internet connection</string>
+    <string name="please_enable_location">Please enable location</string>
+    <string name="age_is_too_small_message">You must be over %1$s years old to use the app</string>
+    <string name="you_are_too_old">You are too old</string>
+    <string name="confirm_action">Confirm action</string>
+    <string name="do_you_want_delete_meet_point">Do you want delete MeetPoint?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

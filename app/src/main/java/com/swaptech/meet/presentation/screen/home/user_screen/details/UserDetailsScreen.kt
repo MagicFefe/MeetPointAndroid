@@ -46,6 +46,7 @@ fun UserDetailsScreen(
     localUser: UserResponse,
     remoteUserViewModel: RemoteUserViewModel,
     localUserViewModel: LocalUserViewModel,
+    userDetailsScreenViewModel: UserDetailsScreenViewModel,
     nestedNavController: NavHostController,
     bottomBarNavController: NavHostController,
     rootNavController: NavHostController
@@ -189,6 +190,7 @@ fun UserDetailsScreen(
                                 ),
                             onClick = {
                                 localUserViewModel.deleteLocalUserById(localUser.id)
+                                userDetailsScreenViewModel.deleteAll()
                                 rootNavController.replaceTo(Auth.route)
                             },
                             colors = ButtonDefaults.buttonColors(

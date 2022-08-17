@@ -2,8 +2,8 @@ package com.swaptech.meet.di.data.db
 
 import android.content.Context
 import androidx.room.Room
-import com.swaptech.meet.data.user.UserDatabase
-import com.swaptech.meet.presentation.USER_DB_NAME
+import com.swaptech.meet.data.user.Database
+import com.swaptech.meet.presentation.DB_NAME
 import dagger.Module
 import dagger.Provides
 
@@ -11,6 +11,6 @@ import dagger.Provides
 class DbModule {
 
     @Provides
-    fun provideUserDatabase(context: Context): UserDatabase =
-        Room.databaseBuilder(context, UserDatabase::class.java, USER_DB_NAME).build()
+    fun provideDatabase(context: Context): Database =
+        Room.databaseBuilder(context, Database::class.java, DB_NAME).build()
 }
